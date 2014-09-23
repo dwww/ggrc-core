@@ -293,7 +293,7 @@ def workflow_info():
 
 @app.route("/mockups/rapid-data-entry/index.html")
 @login_required
-def workflow_info():
+def rapid_data_entry():
   """Rapid data entry mockup
   """
   return render_template("mockups/rapid-data-entry/index.html")
