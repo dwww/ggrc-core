@@ -291,6 +291,13 @@ def workflow_info():
   """
   return render_template("mockups/v1.1/workflow.html")
 
+@app.route("/mockups/rapid-data-entry/index.html")
+@login_required
+def rapid_data_entry():
+  """Rapid data entry mockup
+  """
+  return render_template("mockups/rapid-data-entry/index.html")
+
 @app.route("/permissions")
 @login_required
 def user_permissions():
