@@ -623,6 +623,20 @@ $(document).ready(function(){
     });
   });
 
+  // Custom Attribute select
+  $('.attr-custom').change(function() {
+    if (this.value == '3') {
+      $('.if-dropdown').fadeIn(500);
+      $('.if-checkbox').fadeOut(500);
+    } else if (this.value == "4") {
+      $('.if-dropdown').fadeOut(500);
+      $('.if-checkbox').fadeOut(500);
+    } else {
+      $('.if-dropdown').fadeOut(500);
+      $('.if-checkbox').fadeIn(500);
+    }
+  });
+
 });
 
 // Grid View Example

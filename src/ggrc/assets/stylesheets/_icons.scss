@@ -36,6 +36,9 @@ a.remove_filter i[class^="grcicon-"] {
 .tree-item .tree-title-area [class^="grcicon-"] {
   display: none;
 }
+.object-tree .tree-item .tree-title-area [class^="grcicon-"] {
+  display: inline-block;
+}
 .tree-item .tree-item .tree-title-area [class^="grcicon-"] {
   display: inline-block;
 }

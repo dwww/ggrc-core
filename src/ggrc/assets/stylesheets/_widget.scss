@@ -1102,3 +1102,33 @@
     }
   }
 }
+
+// Table
+.table-wrap {
+  padding-top: 20px;
+}
+.table {
+  tbody {
+    tr:hover {
+      td,
+      th {
+        background: transparent;
+      }
+    }
+    td {
+      vertical-align: middle;
+      padding: 6px 8px;
+      line-height: 24px;
+    }
+  }
+  .add-item {
+    tr {
+      td {
+        border-bottom: 1px solid $footerBorder;
+      }
+    }
+    a {
+      font-weight: bold;
+    }
+  }
+}
