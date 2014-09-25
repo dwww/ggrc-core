@@ -298,6 +298,13 @@ def rapid_data_entry():
   """
   return render_template("mockups/rapid-data-entry/index.html")
 
+@app.route("/mockups/custom-attributes/index.html")
+@login_required
+def custom_attributes():
+  """Custom attributes mockup
+  """
+  return render_template("mockups/custom-attributes/index.html")
+
 @app.route("/permissions")
 @login_required
 def user_permissions():
