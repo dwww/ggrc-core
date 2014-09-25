@@ -509,7 +509,7 @@
                                   <td class="action-bar">
                                     <ul>
                                       <li>
-                                        <a href="#customAttributeEdit" data-toggle="modal">
+                                        <a href="#customAttribute" data-toggle="modal">
                                           <i class="grcicon-edit"></i>
                                           Edit
                                         </a>
@@ -524,7 +524,7 @@
                                   <td class="action-bar">
                                     <ul>
                                       <li>
-                                        <a href="#customAttributeEdit" data-toggle="modal">
+                                        <a href="#customAttribute" data-toggle="modal">
                                           <i class="grcicon-edit"></i>
                                           Edit
                                         </a>
@@ -539,7 +539,7 @@
                                   <td class="action-bar">
                                     <ul>
                                       <li>
-                                        <a href="#customAttributeEdit" data-toggle="modal">
+                                        <a href="#customAttribute" data-toggle="modal">
                                           <i class="grcicon-edit"></i>
                                           Edit
                                         </a>
@@ -554,7 +554,7 @@
                                   <td class="action-bar">
                                     <ul>
                                       <li>
-                                        <a href="#customAttributeEdit" data-toggle="modal">
+                                        <a href="#customAttribute" data-toggle="modal">
                                           <i class="grcicon-edit"></i>
                                           Edit
                                         </a>
@@ -569,7 +569,7 @@
                                   <td class="action-bar">
                                     <ul>
                                       <li>
-                                        <a href="#customAttributeEdit" data-toggle="modal">
+                                        <a href="#customAttribute" data-toggle="modal">
                                           <i class="grcicon-edit"></i>
                                           Edit
                                         </a>
@@ -584,7 +584,7 @@
                                   <td class="action-bar">
                                     <ul>
                                       <li>
-                                        <a href="#customAttributeEdit" data-toggle="modal">
+                                        <a href="#customAttribute" data-toggle="modal">
                                           <i class="grcicon-edit"></i>
                                           Edit
                                         </a>
@@ -599,7 +599,7 @@
                                   <td class="action-bar">
                                     <ul>
                                       <li>
-                                        <a href="#customAttributeEdit" data-toggle="modal">
+                                        <a href="#customAttribute" data-toggle="modal">
                                           <i class="grcicon-edit"></i>
                                           Edit
                                         </a>
@@ -614,7 +614,7 @@
                                   <td class="action-bar">
                                     <ul>
                                       <li>
-                                        <a href="#customAttributeEdit" data-toggle="modal">
+                                        <a href="#customAttribute" data-toggle="modal">
                                           <i class="grcicon-edit"></i>
                                           Edit
                                         </a>
@@ -629,7 +629,7 @@
                                   <td class="action-bar">
                                     <ul>
                                       <li>
-                                        <a href="#customAttributeEdit" data-toggle="modal">
+                                        <a href="#customAttribute" data-toggle="modal">
                                           <i class="grcicon-edit"></i>
                                           Edit
                                         </a>
@@ -644,7 +644,7 @@
                                   <td class="action-bar">
                                     <ul>
                                       <li>
-                                        <a href="#customAttributeEdit" data-toggle="modal">
+                                        <a href="#customAttribute" data-toggle="modal">
                                           <i class="grcicon-edit"></i>
                                           Edit
                                         </a>
@@ -2726,96 +2726,6 @@
             </ul>
           </div>
 
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="customAttributeEdit" class="modal hide fade modal-wide ui-draggable" tabindex="-1" role="dialog" aria-labelledby="customAttributeEditLabel" aria-hidden="true">
-    <div class="modal-header">
-      <a class="btn btn-mini btn-danger pull-right" href="#" data-dismiss="modal">
-        <i class="grcicon-x-white"></i>
-      </a>
-      <h2>
-        <span>Edit Custom Attribute</span>
-      </h2>
-    </div>
-    <div class="modal-body">
-      <form action="#">
-        <div class="row-fluid">
-          <div class="span8">
-            <label>
-              Attribute Title
-              <span class="required">*</span>
-              <i class="grcicon-help-black" rel="tooltip" title="Description goes here"></i>
-            </label>
-            <input class="input-block-level" placeholder="Enter Title" name="attribute_title" type="text" value="" tabindex="1" autofocus>
-          </div>
-          <div class="span4">
-            <label>
-              Attribute Type
-              <span class="required">*</span>
-              <i class="grcicon-help-black" rel="tooltip" title="Description goes here"></i>
-            </label>
-            <select class="input-block-level attr-custom" name="attribute_type" tabindex="2">
-              <option value="1">Text</option>
-              <option value="2">Rich text</option>
-              <option value="3">Dropdown</option>
-              <option value="4">Checkbox</option>
-              <option value="5">File upload</option>
-              <option value="6">Date</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row-fluid if-dropdown">
-          <div class="span12">
-            <label>
-              Possible values (separated by comma ",")
-              <i class="grcicon-help-black" rel="tooltip" title="Description goes here"></i>
-            </label>
-            <input class="input-block-level" placeholder="Values" name="values" type="text" value="" tabindex="3">
-          </div>
-        </div>
-
-        <div class="row-fluid">
-          <div class="span6">
-            <label>
-              Inline help
-              <i class="grcicon-help-black" rel="tooltip" title="Description goes here"></i>
-            </label>
-            <input class="input-block-level" placeholder="Inline Help" name="inline_help" type="text" value="" tabindex="4">
-          </div>
-          <div class="span6 if-checkbox">
-            <label>
-              Placeholder
-              <i class="grcicon-help-black" rel="tooltip" title="Description goes here"></i>
-            </label>
-            <input class="input-block-level" placeholder="Placeholder" name="placeholder" type="text" value="" tabindex="5">
-          </div>
-        </div>
-
-      </form>
-    </div>
-    <div class="modal-footer">
-      <div class="row-fluid">
-        <div class="span1">
-          <div class="deny-buttons">
-            <a class="btn" data-dismiss="modal" href="#">Cancel</a>
-          </div>
-        </div>
-        <div class="span2">
-          <div class="deny-buttons">
-            <a class="btn btn-danger" data-dismiss="modal" href="#">Delete</a>
-          </div>
-        </div>
-        <div class="span6">
-          &nbsp;
-        </div>
-        <div class="span3">
-          <div class="confirm-buttons">
-            <a id="addAttribute" tabindex="24" class="btn btn-primary" href="javascript://">Save</a>
-          </div>
         </div>
       </div>
     </div>
