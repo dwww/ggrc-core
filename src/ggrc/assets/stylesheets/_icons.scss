@@ -728,7 +728,7 @@ i.short {
   .grcicon-cycle-color { background-position: -342px -32px; }
 
   li {
-    &:hover {
+    a:hover {
       // turned icons to white
       .grcicon-info { background-position:-198px -80px; }
       .grcicon-role-color { background-position:-102px -32px; }

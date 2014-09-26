@@ -378,8 +378,171 @@
   }
 }
 
-// INNER NAV
+// TOP INNER NAV
+.top-inner-nav {
+  ul.internav {
+    @include reset-list();
+    @include clearfix();
+    margin-left: 11px;
+    li {
+      position: relative;
+      float: left;
+      margin-bottom: -1px;
+      &.inner-nav-button {
+        text-align: center;
+        padding: 1px 10px 0 10px;
+        float: right;
+        .message {
+          color: $green;
+        }
+        .tiny-help-text {
+          padding-top: 4px;
+          font-size: 10px;
+          line-height: 13px;
+          display: inline-block;
+          margin: 0;
+        }
+      }
+      &.finished {
+        background: $rqAccepted;
+      }
+      &.started {
+        background: $rqStarted;
+      }
+      &.overdue {
+        background: $red;
+        a {
+          color: $white;
+          i {
+            @include opacity(1);
+          }
+        }
+      }
+      &.hidden-widgets-list {
+        .dropdown-toggle {
+          &:hover {
+            background: none;
+          }
+        }
+      }
+    }
+    a {
+      padding: 0 9px;
+      display: block;
+      line-height: 29px;
+      font-size: 13px;
+      color: $tabTitle;
+      border: 1px solid transparent;
+      @include transition(background 0.2s ease, color 0.2s ease);
+      &:hover {
+        background: $tabHoverBgnd;
+        color: $white;
+        text-decoration: none;
+        i {
+          @include opacity(1);
+        }
+      }
+    }
+    i {
+      margin-top: 6px;
+      @include opacity(0.55);
+    }
+    li.hidden-widgets-list {
+      a.dropdown-toggle {
+        &:hover {
+          background: none;
+        }
+      }
+    }
+    li.active {
+      a {
+        color: $subTitle;
+        background-color: $white;
+        border: 1px solid $tabBorder;
+        border-bottom-color: transparent;
+        i {
+          @include opacity(1);
+        }
+        &:hover {
+          background: $tabHoverBgnd;
+          color: $white;
+        }
+      }
+    }
+    li:hover {
+      &.overdue {
+        a {
+          background-color: $red;
+          color: $white;
+        }
+      }
+    }
+    &.business {
+      li {
+        > a:hover {
+          color: $white;
+          background-color:$business;
+        }
+      }
+    }
+    &.governance {
+      li {
+        > a:hover {
+          background-color:$governance;
+        }
+      }
+    }
+    &.risk {
+      li {
+        > a:hover {
+          background-color:$risk;
+        }
+      }
+    }
+    &.program {
+      li {
+        > a:hover {
+          color: $white;
+          background-color:$programs;
+        }
+      }
+    }
+    &.objectives {
+      li {
+        > a:hover {
+          background-color:$objectives;
+        }
+      }
+    }
+    &.controls {
+      li {
+        > a:hover {
+          color: $white;
+          background-color:$controls;
+        }
+      }
+    }
+    &.entities {
+      li {
+        > a:hover {
+          color: $white;
+          background-color:$entities;
+        }
+      }
+    }
+    &.workflow {
+      li {
+        > a:hover {
+          color: $white;
+          background-color:$programs;
+        }
+      }
+    }
+  }
+}
 
+// INNER NAV
+/* Inner nav dont exist anymore. It is moved up to top-inner-nav
 .inner-nav {
   .object-nav {
     .add-nav-item {
@@ -643,6 +806,7 @@
     }
   }
 }
+*/
 
 .extended-info {
   position:absolute;

@@ -41,13 +41,13 @@
   margin-left:248px;
 }
 .header-content {
-  height:49px;
-  border-bottom:1px solid #eee;
+  height:50px;
   line-height:50px;
   position:fixed;
   top:30px;
   width:100%;
 }
+/* Inner nav dont exist anymore. It is moved up to top-inner-nav
 .inner-nav {
   width:200px;
   height:445px;
@@ -56,12 +56,19 @@
   overflow-y:auto;
   overflow-x:hidden;
 }
+*/
+.top-inner-nav {
+  width: 100%;
+  position: fixed;
+  top: 80px;
+  z-index: 100;
+  border-bottom: 1px solid $tabBorder;
+}
 .object-area {
   position:fixed;
-  top:80px;
+  top: 130px;
   overflow-y:auto;
   overflow-x:hidden;
-  margin-left:200px;
   height:445px;
   &.import-area {
     margin-left:0;

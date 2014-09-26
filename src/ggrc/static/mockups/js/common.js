@@ -4,8 +4,8 @@ $(document).ready(function(){
 
   $('.lhs-holder').css('height', $(window).height() - 71 );
   $('.inner-nav').css('height', $(window).height() - 126 );
-  $('.object-area').css('height', $(window).height() - 156 );
-  $('.object-area').css('width', $(window).width() - 448 );
+  $('.object-area').css('height', $(window).height() - 172 );
+  $('.object-area').css('width', $(window).width() - 248);
 
   $('input[name=notify-digest]').parent().on('click', function(ev){
     ev.stopPropagation();
