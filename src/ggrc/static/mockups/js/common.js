@@ -636,6 +636,12 @@ $(document).ready(function(){
       $('.if-checkbox').fadeIn(500);
     }
   });
+  
+  // Add Custom Attribute
+  $('body').on('click', '#addAttribute', function() {
+    $("#NewAttribute").show();
+    $("#customAttribute").modal('hide');
+  });
 
 });
 
