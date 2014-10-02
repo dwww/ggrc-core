@@ -180,6 +180,7 @@ class MysqlIndexer(SqlIndexer):
       )
     type_union_queries.append(object_owners_query)
 
+    # FIXME The following line crashes if the Workflow extension is not enabled
     for model in [all_models.Program, all_models.Audit, all_models.Workflow]:
       context_query = db.session.query(
           model.id.label('id'),

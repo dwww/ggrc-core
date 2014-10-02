@@ -116,6 +116,7 @@ def all_cache_entries():
 def all_mapping_entries():
   ret = [
     mapping('Audit', 'requests'),
+    mapping('Audit', 'program'),
     mapping('Request', 'audit'),
     mapping('Request', 'responses'),
     mapping('Response', 'request'),
