@@ -12,24 +12,18 @@
 {{#if allow_mapping_or_creating}}
 <li class="tree-footer tree-item tree-item-add">
   <div class="row-fluid">
-    <div class="span12 section-expandable">
+    <div class="span12">
 
       {{#if model.root_object}}
-      <a
-        class="section-add"
-        href="javascript://"
-        rel="tooltip"
-        data-placement="left"
-        data-toggle="multitype-multiselect-modal-selector"
-        data-join-mapping="{{mapping}}"
-        data-join-option-type="{{model.shortName}}"
-        data-join-object-id="{{parent_instance.id}}"
-        data-join-object-type="{{parent_instance.class.shortName}}"
-        data-exclude-option-types="{{exclude_option_types}}"
-        data-original-title="Map {{firstnonempty title_singular model.title_singular 'Object'}} to this {{firstnonempty parent_instance.class.title_singular 'Object'}}">
-        + {{model.title_singular}}
-      </a>
-      <span class="section-expander">
+        {{#if allow_creating}}
+        {{#is_allowed 'create' model.shortName context=null}}
+        <a href="#">
+          Create System
+        </a>
+        &nbsp;
+        &nbsp;
+        {{/is_allowed}}
+        {{/if}}
         <a
           class="section-add"
           href="javascript://"
@@ -62,22 +56,21 @@
           Export Systems
         </a>
         {{/if}}
-      </span>
       {{else}}
-      <a
-        class="section-add section-sticky"
-        href="javascript://"
-        rel="tooltip"
-        data-placement="left"
-        data-toggle="multitype-multiselect-modal-selector"
-        data-join-mapping="{{mapping}}"
-        data-join-object-id="{{parent_instance.id}}"
-        data-join-object-type="{{parent_instance.class.shortName}}"
-        data-exclude-option-types="{{exclude_option_types}}"
-        data-original-title="Map {{firstnonempty title_singular model.title_singular 'Object'}} to this {{firstnonempty parent_instance.class.title_singular 'Object'}}"
-        data-object-params='{{#if_instance_of parent_instance "Section"}}{ "section": { "id": {{parent_instance.id}}, "title": "{{json_escape parent_instance.title}}", "description": "{{json_escape parent_instance.description}}" } }{{/if_instance_of}}'>
-        + Object
-      </a>
+        <a
+          class="section-add section-sticky"
+          href="javascript://"
+          rel="tooltip"
+          data-placement="left"
+          data-toggle="multitype-multiselect-modal-selector"
+          data-join-mapping="{{mapping}}"
+          data-join-object-id="{{parent_instance.id}}"
+          data-join-object-type="{{parent_instance.class.shortName}}"
+          data-exclude-option-types="{{exclude_option_types}}"
+          data-original-title="Map {{firstnonempty title_singular model.title_singular 'Object'}} to this {{firstnonempty parent_instance.class.title_singular 'Object'}}"
+          data-object-params='{{#if_instance_of parent_instance "Section"}}{ "section": { "id": {{parent_instance.id}}, "title": "{{json_escape parent_instance.title}}", "description": "{{json_escape parent_instance.description}}" } }{{/if_instance_of}}'>
+          + Object
+        </a>
       {{/if}}
     </div>
   </div>

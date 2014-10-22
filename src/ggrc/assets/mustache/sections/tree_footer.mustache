@@ -15,12 +15,9 @@
 {{#if_instance_of parent_instance 'Contract|Standard|Policy|Regulation'}}
 <li class="tree-footer tree-item tree-item-add">
   <div class="row-fluid">
-    <div class="span12 section-expandable">
-      <a href="javascript://" class="section-add">
-        + {{#if_instance_of parent_instance 'Contract'}}Clause{{else}}Section{{/if_instance_of}}
-      </a>
-      <span class="section-expander">
-        {{#if_instance_of parent_instance 'Contract'}}
+    <div class="span12">
+      
+      {{#if_instance_of parent_instance 'Contract'}}
         <a
           href="javascript://"
           rel="tooltip"
@@ -33,42 +30,40 @@
           data-original-title="Map {{firstnonempty title_singular model.title_singular 'Object'}} to this {{firstnonempty parent_instance.class.title_singular 'Object'}}">
           Map {{model.title_singular}}
         </a>
-        {{else}}
+      {{else}}
         <a href="javascript://" class="section-create" data-toggle="modal-ajax-form" data-modal-reset="reset" data-dirty="#regulations, #combo" data-route="regulations" data-modal-class="modal-wide" data-object-singular="Section" data-object-plural="sections" data-object-singular-override="{{#if_instance_of parent_instance 'Contract'}}Clause{{/if_instance_of}}" data-object-params='{ "directive": {{parent_instance.id}} }'>
-          <i class="grcicon-add-black"></i>
           Create {{#if_instance_of parent_instance 'Contract'}}Clause{{else}}Section{{/if_instance_of}}
         </a>
-        {{/if_instance_of}}
-        &nbsp;
-        &nbsp;
-        {{#if_instance_of parent_instance 'Contract'}}
-        <a href="{{parent_instance.viewLink}}/import_clauses?return_to={{param_current_location}}" class="section-import">
-          <i class="grcicon-imp-exp"></i>
-          Import Clauses
-        </a>
-        &nbsp;
-        &nbsp;
-        {{#if list.length}}
-        <a href="{{parent_instance.viewLink}}/export_clauses" class="section-import">
-          <i class="grcicon-export"></i>
-          Export Clauses
-        </a>
-        {{/if}}
-        {{else}}
-        <a href="{{parent_instance.viewLink}}/import_sections?return_to={{param_current_location}}" class="section-import">
-          <i class="grcicon-imp-exp"></i>
-          Import Sections
-        </a>
-        &nbsp;
-        &nbsp;
-        {{#if list.length}}
-        <a href="{{parent_instance.viewLink}}/export_sections" class="section-import">
-          <i class="grcicon-export"></i>
-          Export Sections
-        </a>
-        {{/if}}
-        {{/if_instance_of}}
-      </span>
+      {{/if_instance_of}}
+      &nbsp;
+      &nbsp;
+      {{#if_instance_of parent_instance 'Contract'}}
+      <a href="{{parent_instance.viewLink}}/import_clauses?return_to={{param_current_location}}" class="section-import">
+        <i class="grcicon-imp-exp"></i>
+        Import Clauses
+      </a>
+      &nbsp;
+      &nbsp;
+      {{#if list.length}}
+      <a href="{{parent_instance.viewLink}}/export_clauses" class="section-import">
+        <i class="grcicon-export"></i>
+        Export Clauses
+      </a>
+      {{/if}}
+      {{else}}
+      <a href="{{parent_instance.viewLink}}/import_sections?return_to={{param_current_location}}" class="section-import">
+        <i class="grcicon-imp-exp"></i>
+        Import Sections
+      </a>
+      &nbsp;
+      &nbsp;
+      {{#if list.length}}
+      <a href="{{parent_instance.viewLink}}/export_sections" class="section-import">
+        <i class="grcicon-export"></i>
+        Export Sections
+      </a>
+      {{/if}}
+      {{/if_instance_of}}
     </div>
   </div>
 </li>
