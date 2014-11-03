@@ -11,10 +11,20 @@
     <a href='mailto:{{email}}' target="_blank"><span class="person-tooltip-trigger" data-placement="top">
       {{email}}
     </span></a>
+    {{^if is_enabled}}
+      <span class="user-disabled">
+        (Disabled)
+      </span>
+    {{/if}}
   {{else}}
     <a href="/people/{{id}}"><span class="person-tooltip-trigger" data-placement="top">
       {{firstnonempty name email}}
     </span></a>
+    {{^if is_enabled}}
+      <span class="user-disabled">
+        (Disabled)
+      </span>
+    {{/if}}
   {{/show_email}}
   <div class="custom-popover-content">
     <div class="preview-container person-preview">
@@ -32,13 +42,13 @@
               <li><strong>Email:</strong> <a href="mailto:{{email}}" target="_blank">{{email}}</a></li>
               {{#company}}<li><strong>Company:</strong> {{company}}</li>{{/company}}
             </ul>
-            
+
             {{{render_hooks 'Person.popover_actions' person=person}}}
 
             <a class="info-action" href="/people/{{id}}">View profile <i class="grcicon-goto"></i></a>
           </div>
         </div>
-        
+
         {{{render_hooks 'Person.popover_info' person=person}}}
 
       </div>

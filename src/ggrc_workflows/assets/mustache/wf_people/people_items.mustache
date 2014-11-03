@@ -1,33 +1,38 @@
 {{!
     Copyright (C) 2014 Google Inc., authors, and contributors <see AUTHORS file>
     Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
-    Created By: Sasmita 
+    Created By: Sasmita
     Maintained By: Sasmita
 }}
 
 
 {{#each options}}
-<li class="tree-item control governance task-item" 
+<li class="tree-item control governance task-item"
   data-object-type="{{instance.class.table_singular}}"
-  {{#instance}}{{ data 'option' }}{{/instance}} 
+  {{#instance}}{{ data 'option' }}{{/instance}}
   data-id="{{ instance.id }}">
     <div class="item-main">
       <div class="openclose">
-      <a href="javascript://" class="openclose-placeholder">           
+      <a href="javascript://" class="openclose-placeholder">
         <div class="row-fluid">
           <div class="span10">
             <span class="tier-trigger">
             </span>
             <div class="item-data">
               <div class="tree-title-area">
-                <i class="grcicon-{{instance.class.table_singular}}-color"></i>                 
+                <i class="grcicon-{{instance.class.table_singular}}-color"></i>
                 {{#if instance.name}}{{instance.name}}{{/if}}
                 <span class="url-link">
                   {{#if instance.email}}{{instance.email}}{{/if}}
                 </span>
+                {{^if instance.is_enabled}}
+                  <span class="user-disabled">
+                    (Disabled)
+                  </span>
+                {{/if}}
               </div>
             </div>
-          </div>          
+          </div>
           <div class="span1">
             &nbsp;
           </div>
@@ -41,8 +46,8 @@
                 <input type="checkbox" value="{{instance.title}}" class="object-check-single">
               {{/if}}
             </div>
-          </div>          
-        </div>          
+          </div>
+        </div>
       </a>
       </div>
     </div>
