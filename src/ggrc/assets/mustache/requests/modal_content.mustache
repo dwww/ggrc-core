@@ -98,7 +98,7 @@
       {{else}}
         {{#using assignee=instance.assignee}}
         <div class="objective-selector">
-          <input tabindex="6" type="text" name="assignee.email" class="span10 search-icon" data-lookup="Person" placeholder="Enter text to search for Assignee" value="{{firstnonempty assignee.email ''}}">
+          <input tabindex="6" type="text" name="assignee.email" class="span10 search-icon" data-lookup="Person" placeholder="Enter text to search for Assignee" null-if-empty="true" value="{{firstnonempty assignee.email ''}}">
         </div>
         {{/using}}
       {{/if_auditor}}

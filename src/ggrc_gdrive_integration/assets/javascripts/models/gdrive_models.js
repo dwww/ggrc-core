@@ -302,6 +302,7 @@ CMS.Models.GDriveFile("CMS.Models.GDriveFolder", {
           .build();
           
           picker.setVisible(true);
+          picker.A.style.zIndex = 2001; // our modals start with 1050
         });
       }
 

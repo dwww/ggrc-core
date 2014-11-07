@@ -80,23 +80,7 @@
 
   <div class="row-fluid">
     <div class="span8 hidable">
-      <label>
-        Workflow Folder <i class="grcicon-help-black" rel="tooltip" data-original-title="If selected, all workflow attachments go here."></i>
-        <a href="javascript://" class="field-hide" tabindex="-1">hide</a>
-      </label>
-      <p tabindex="6">
-        {{#if instance.workflow_folder}}
-          <a href="{{instance.workflow_folder.0.url}}" target="_blank">
-            {{instance.workflow_folder.0.name}}
-          </a>
-        {{else}}
-          <a href="javascript://" class="entry-attachment tree-item-add" data-toggle="gdrive-picker"
-            data-model="{{instance.type}}" data-type="folders" {{data 'instance'}}>
-            <i class="grcicon-attach-color"></i> Assign folder
-          </a>
-        {{/if}}
-        <br /><br />
-      </p>
+      <ggrc-gdrive-folder-picker instance="instance" deferred="true" tabindex="6" placeholder="If selected, all workflow attachments go here."/>
     </div>
   </div>
 

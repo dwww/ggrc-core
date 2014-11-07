@@ -171,13 +171,12 @@ def get_cycle_tasks(cycle):
   tasks_found={}
   ret_tasks=[]
   for group in cycle.cycle_task_groups:
-     for object in group.cycle_task_group_objects:
-       for task in object.cycle_task_group_object_tasks:
-         if tasks_found.has_key(task.id):
-           continue
-         else:
-           ret_tasks.append(task)
-           tasks_found[task.id]=task
+    for task in group.cycle_task_group_tasks:
+      if tasks_found.has_key(task.id):
+        continue
+      else:
+        ret_tasks.append(task)
+        tasks_found[task.id]=task
   return ret_tasks
 
 def get_workflow_tasks(workflow):
@@ -356,14 +355,13 @@ def handle_tasks_completed_for_cycle():
   unfinished_tasks_in_cycle={}
   for cycle in workflow_cycles:
     for task_group in cycle.cycle_task_groups:
-       for task_group_object in task_group.cycle_task_group_objects:
-         for task in task_group_object.cycle_task_group_object_tasks:
-           if task.status not in ['Finished', 'Verified']:
-             unfinished_tasks_in_cycle[cycle.id]=True
+      for task in task_group.cycle_task_group_tasks:
+        if task.status not in ['Finished', 'Verified']:
+          unfinished_tasks_in_cycle[cycle.id] = True
   for cycle in workflow_cycles:
-     if not unfinished_tasks_in_cycle.has_key(cycle.id):
-       subject="All tasks for workflow "  + cycle.title  + " are completed"
-       prepare_notification_for_completed_cycle(cycle, subject, PRI_COMPLETED_TASKS)
+    if not unfinished_tasks_in_cycle.has_key(cycle.id):
+      subject="All tasks for workflow "  + cycle.title  + " are completed"
+      prepare_notification_for_completed_cycle(cycle, subject, PRI_COMPLETED_TASKS)
 
 @Resource.model_posted.connect_via(NotificationConfig)
 def handle_notification_config_post(sender, obj=None, src=None, service=None):

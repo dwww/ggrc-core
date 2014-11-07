@@ -24,11 +24,14 @@
     {{/if_equals}}
   </div>
   {{{instance.description}}}
+  {{#prune_context}}
   {{#child_options.0}}
     <ul class="attachment-list" {{data 'options'}} {{ (el) -> el.cms_controllers_tree_view(el.data('options')).control("tree_view").display() }}>
     </ul>
   {{/child_options.0}}
+  {{/prune_context}}
   {{^if_equals parent_instance.status 'Verified'}}
+  {{#with_mapping 'folders' instance}} {{! dummy to ensure the child content always updates}}
   {{#defer 'workflowFolder' instance.workflowFolder allow_fail=true}}
     {{#if workflowFolder.errors}}
       <small class="error-inline">
@@ -36,10 +39,9 @@
       </small>
     {{else}}
       <div class="oneline">
-        <a href="javascript://" class="entry-attachment tree-item-add" data-toggle="gdrive-picker"
-          data-model="{{instance.type}}" data-id="{{instance.id}}" data-folder-id="{{workflowFolder.id}}">
-          <i class="grcicon-attach-color"></i><span>Attach supporting file</span>
-        </a>
+        <i class="grcicon-attach-color" style="margin-top:0"></i>
+        <ggrc-gdrive-picker-launcher instance="instance" link_text="Attach supporting file" link_class="entry-attachment tree-item-add">
+        </ggrc-gdrive-picker-launcher>
         {{^if workflowFolder}}
         <small class="error-inline">
           <strong>Warning:</strong> Workflow folder is not set. Files will be placed in your Gdrive root folder.
@@ -50,6 +52,7 @@
   {{else}}
     <div {{attach_spinner '{ "radius": 3, "length": 3, "width": 2 }' 'display:inline-block; top: -5px; margin-left: 5px;' }}></div>
   {{/defer}}
+  {{/with_mapping}}
   {{/if_equals}}
   <span class="entry-author">Modified by {{#using person=instance.modified_by}}{{{render '/static/mustache/people/popover.mustache' person=person}}}{{/using}} on {{date instance.created_at}}</span>
 </li>

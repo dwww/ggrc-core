@@ -40,23 +40,7 @@
   </div>
   <div class="row-fluid">
     <div class="span12">
-      <h6>gDrive Folder</h6>
-      {{#with_mapping 'folders' instance}}
-        {{#if folders.length}}
-          <a href="{{folders.0.instance.alternateLink}}" target="_blank">
-            {{folders.0.instance.title}}
-          </a>
-        {{else}}
-          No folder for this {{instance.class.title_singular}}.
-          <a href="javascript://" class="entry-attachment tree-item-add" data-toggle="gdrive-picker"
-            data-model="{{instance.type}}" data-type="folders" data-id="{{instance.id}}">
-            <i class="grcicon-attach-color"></i> Attach folder
-          </a>
-        {{/if}}
-      {{else}}
-        {{! This is a failure state for with_mapping, if something in the mapping doesn't refresh properly }}
-        The GDrive folder for this {{instance.class.title_singular}} could not be accessed.
-      {{/with_mapping}}
+      <ggrc-gdrive-folder-picker instance="instance"/>
       
     </div>
   </div>

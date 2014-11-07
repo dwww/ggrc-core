@@ -72,6 +72,11 @@
   height:445px;
   &.import-area {
     margin-left:0;
+    .widget {
+      .content {
+        display: block !important;
+      }
+    }
   }
   &.dashboard-area {
     margin-left:0;

@@ -37,11 +37,19 @@
           <div class="span1">
             <div class="object-check" align="left">
               {{#if mappings.length}}
+                {{#has_pending_removal selected_object instance}}
+                  <input type="checkbox" value="{{instance.title}}" class="object-check-single">
+                {{else}}
                 {{#result_direct_mappings bindings_compute selected_object}}
                   <input type="checkbox" value="{{instance.title}}" checked="checked" disabled="true" class="object-check-single">
                 {{/result_direct_mappings}}
+                {{/has_pending_addition}}
               {{else}}
-                <input type="checkbox" value="{{instance.title}}" class="object-check-single">
+                {{#has_pending_addition selected_object instance}}
+                  <input type="checkbox" value="{{instance.title}}" checked="checked" disabled="true" class="object-check-single">
+                {{else}}
+                  <input type="checkbox" value="{{instance.title}}" class="object-check-single">
+                {{/has_pending_addition}}
               {{/if}}
             </div>
           </div>

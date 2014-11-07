@@ -21,10 +21,10 @@
             </span>
             <div class="item-data">
               <div class="tree-title-area">
-                <i class="grcicon-{{instance.class.table_singular}}-color"></i>                 
-                {{instance.title}}
+                <i class="grcicon-{{instance.class.table_singular}}-color"></i>
+                {{firstexist instance.name instance.title}}
                 <span class="url-link">
-                  {{instance.link}}
+                  {{firstexist instance.email instance.link}}
                 </span>
               </div>
             </div>

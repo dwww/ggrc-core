@@ -1,0 +1,41 @@
+<div class="row-fluid">
+  <div class="span12">
+    <h6>{{instance.class.title_singular}} Folder <i class="grcicon-help-black" style="margin-top:0px;" rel="tooltip" data-original-title="If selected, all {{instance.class.title_singular}} attachments go here."></i></h6>
+    <p class="oneline">
+      {{#if _folder_change_pending}}
+        <span {{attach_spinner '{ "radius": 2.5, "length": 2.5, "width": 2 }' 'display:inline-block; top: -5px; left: 8px;' }}></span>
+      {{else}}
+          {{#if current_folder}}
+            <a href="{{current_folder.alternateLink}}" target="_blank">
+              <i class="grcicon-attach-color"></i> {{current_folder.title}}
+            </a>
+            {{^if readonly}}
+            <a class="icon-link entry-attachment" href="javascript://" rel="tooltip" data-original-title="{{firstnonempty placeholder 'Choose a new folder'}}" data-toggle="gdrive-picker" data-model="{{instance.class.model_singular}}" data-id="{{instance.id}}" data-type="folders" data-replace="true">
+              <i class="grcicon-edit"></i>
+            </a>
+
+            <a class="icon-link" href="javascript://" rel="tooltip" data-original-title="Detach folder from {{instance.class.title_singular}}" data-toggle="gdrive-remover"
+              data-model="{{instance.class.model_singular}}" data-id="{{instance.id}}">
+              <i class="grcicon-deleted"></i>
+            </a>
+            {{/if}}
+          {{else}}
+            <span class="error">
+              No folder for this {{instance.class.title_singular}}.
+            </span>
+            {{^if readonly}}
+            <a href="javascript://" tabindex="{{firsnonempty tabindex '0'}}" class="entry-attachment tree-item-add" data-toggle="gdrive-picker"
+              data-model="{{instance.class.model_singular}}" data-type="folders" data-id="{{instance.id}}">
+              <i class="grcicon-attach-color"></i> Assign folder
+            </a>
+            {{/if}}
+          {{/if}}
+          {{#if error}}
+            <small>
+              <strong>Warning:</strong> You need permission to access {{instance.class.title_singular}} folder. <a href="https://drive.google.com/folderview?id={{grdive_msg_to_id error.message}}&usp=sharing#">Request access.</a>
+            </small>
+          {{/if}}
+      {{/if}}
+    </p>
+  </div>
+</div>

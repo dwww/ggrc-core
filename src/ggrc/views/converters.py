@@ -508,7 +508,7 @@ def import_system_task(task):
       return render_template("systems/import_result.haml", exception_message=e, converter=converter, results=converter.objects, heading_map=converter.object_map)
     return render_template("directives/import_errors.haml", exception_message=e)
 
-@app.route("/_background_tasks/export_people", methods=['POST'])
+@app.route("/_background_tasks/export_people", methods=['GET'])
 @queued_task
 def export_people_task(task):
   from ggrc.converters.people import PeopleConverter
@@ -519,7 +519,7 @@ def export_people_task(task):
   filename = "PEOPLE.csv"
   return handle_converter_csv_export(filename, people, PeopleConverter, **options)
 
-@app.route("/_background_tasks/export_help", methods=['POST'])
+@app.route("/_background_tasks/export_help", methods=['GET'])
 @queued_task
 def export_help_task(task):
   from ggrc.converters.help import HelpConverter
@@ -530,7 +530,7 @@ def export_help_task(task):
   filename = "HELP.csv"
   return handle_converter_csv_export(filename, people, HelpConverter, **options)
 
-@app.route("/_background_tasks/export_process", methods=['POST'])
+@app.route("/_background_tasks/export_process", methods=['GET'])
 @queued_task
 def export_process_task(task):
   from ggrc.converters.systems import SystemsConverter
@@ -544,7 +544,7 @@ def export_process_task(task):
   filename = "PROCESSES.csv"
   return handle_converter_csv_export(filename, procs, SystemsConverter, **options)
 
-@app.route("/_background_tasks/export_system", methods=['POST'])
+@app.route("/_background_tasks/export_system", methods=['GET'])
 @queued_task
 def export_system_task(task):
   from ggrc.converters.systems import SystemsConverter

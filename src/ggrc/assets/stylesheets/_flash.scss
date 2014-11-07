@@ -58,6 +58,9 @@
 
 .alert {
   margin: 0 20px 20px 20px;
+  p {
+    margin-bottom: 0;
+  }
   &.warning {
     border: 1px solid $warningBorder;
     background-color: $warningBgnd;

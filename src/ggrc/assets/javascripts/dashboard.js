@@ -110,7 +110,6 @@ jQuery(function($) {
   }
   function checkStatus(result, type, $btn){
     CMS.Models.BackgroundTask.findOne({id: result.id}, function(task){
-      task = task.background_task;
       var msg = ($btn && $btn.val() == "Upload and Review") ? $btn.val() : type;
       if(task.status == "Pending" || task.status == "Running"){
 

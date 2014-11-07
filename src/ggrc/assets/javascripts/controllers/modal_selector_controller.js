@@ -656,7 +656,7 @@
 
       can.each($this.data(), function(v, k) {
         data_set[k.replace(/[A-Z]/g, function(s) { return "_" + s.toLowerCase(); })] = v; //this is just a mapping of keys to underscored keys
-        if(!/[A-Z]/.test(k)) //if we haven't changed the key at all, don't delete the original
+        if(/[A-Z]/.test(k)) //if we haven't changed the key at all, don't delete the original
           delete data_set[k];
       });
 
@@ -791,7 +791,9 @@
             self.element.trigger('loaded');
             self.element.find(".selector-list").cms_controllers_infinite_scroll();
             setTimeout(function() {
-              self.element.find('#search').focus();
+              if (self.emlement) {
+                self.element.find('#search').focus();
+              }
             }, 200);
           });
 
@@ -1003,9 +1005,9 @@
     , on_select_option: function(el) {
         var instance = el.data('option')
           , page_instance = GGRC.page_instance();
-        
+
         //Check if selected item is page instance:
-        this.context.attr('is_page_instance', 
+        this.context.attr('is_page_instance',
           page_instance.type === instance.type && page_instance.id === instance.id);
         el.closest('.option_column').find('li.tree-item').removeClass('selected');
         el.addClass('selected');
@@ -1028,7 +1030,7 @@
         } else {
           join_instance.save()
             .done(function() {
-              $(document.body).trigger('ajax:flash', 
+              $(document.body).trigger('ajax:flash',
                   { success: that.context.selected_option.constructor.shortName + " mapped successfully."});
               $(that.element).modal_form('hide');
             })
@@ -1257,7 +1259,7 @@
 
       //  If we have duplicate options, we want to use the first, so return
       //    early.
-      //  Also return now if the descriptor is explicitly excluded from the 
+      //  Also return now if the descriptor is explicitly excluded from the
       //    set of descriptors for this modal.
       if (option_descriptors[option_model_name]
           || ~can.inArray(option_model_name, exclude_option_types)
@@ -1298,7 +1300,7 @@
 
       can.each($this.data(), function(v, k) {
         data_set[k.replace(/[A-Z]/g, function(s) { return "_" + s.toLowerCase(); })] = v; //this is just a mapping of keys to underscored keys
-        if(!/[A-Z]/.test(k)) //if we haven't changed the key at all, don't delete the original
+        if(/[A-Z]/.test(k)) //if we haven't changed the key at all, don't delete the original
           delete data_set[k];
       });
 
@@ -1322,7 +1324,7 @@
     });
   });
 
-  
+
 
 
 
@@ -1350,45 +1352,94 @@
     }
 
     , init_menu: function() {
-        var menu, all_models = [], 
-            lookup = {
+        var menu,
+          all_models = [],
+          lookup,
+          selected_object =  this.options.selected_object.type;
+
+        if(selected_object === "TaskGroup") { //workflow/TaskGroup don't have People/Groups sub catagory
+          lookup = {
               governance: 0
             , business: 1
-            };
+          };
+          if (!this.options.option_type_menu) {
+            menu = [
+                { category: "Governance"
+                , items: []
+                }
+              , { category: "Assets/Business"
+                , items: []
+                }
+              ];
 
-        if (!this.options.option_type_menu) {
-          menu = [
-              { category: "Governance"
-              , items: []
+            //Add All Objects at the top of the list
+            menu[0].items.push({
+              model_name:"AllObjects",
+              model_display:"All Objects"
+            });
+
+            can.each(this.options.option_descriptors, function(descriptor) {
+              if (descriptor.model.category == "workflow" ||
+                  descriptor.model.category == "undefined" ||
+                  descriptor.model.category == "entities"){
+                return;
               }
-            , { category: "Assets/Business"
-              , items: []
+              else{
+                menu[lookup[descriptor.model.category] || 0].items.push({
+                    model_name: descriptor.model.shortName
+                  , model_display: descriptor.model.title_plural
+                });
+                //Save the model names for All Object search
+                all_models.push(descriptor.model.shortName);
               }
-            ];
+            })
 
-          //Add All Objects at the top of the list
-          menu[0].items.push({
-            model_name:"AllObjects",
-            model_display:"All Objects"
-          }); 
+            this.options.option_type_menu = menu;
+          }
 
-          can.each(this.options.option_descriptors, function(descriptor) {
-            if (descriptor.model.category == "workflow" || 
-                descriptor.model.category == "undefined" ||
-                descriptor.model.category == "entities"){
-              return;
-            }
-            else{
-              menu[lookup[descriptor.model.category] || 0].items.push({
-                  model_name: descriptor.model.shortName
-                , model_display: descriptor.model.title_plural
-              });
-              //Save the model names for All Object search
-              all_models.push(descriptor.model.shortName);
-            }
-          })
+        }
+        else {
+          lookup = {
+              governance: 0
+            , business: 1
+            , entities: 2
+          };
 
-          this.options.option_type_menu = menu;
+          if (!this.options.option_type_menu) {
+            menu = [
+                { category: "Governance"
+                , items: []
+                }
+              , { category: "Assets/Business"
+                , items: []
+                }
+              , { category: "People/Groups"
+                , items: []
+                }
+              ];
+
+            //Add All Objects at the top of the list
+            menu[0].items.push({
+              model_name:"AllObjects",
+              model_display:"All Objects"
+            });
+
+            can.each(this.options.option_descriptors, function(descriptor) {
+              if (descriptor.model.category == "workflow" || descriptor.model.category == "undefined"){
+                return;
+              }
+              else{
+                menu[lookup[descriptor.model.category] || 0].items.push({
+                    model_name: descriptor.model.shortName
+                  , model_display: descriptor.model.title_plural
+                });
+                //Save the model names for All Object search
+                all_models.push(descriptor.model.shortName);
+              }
+            })
+
+            this.options.option_type_menu = menu;
+          }
         }
 
         this.options.all_models = all_models;
@@ -1401,9 +1452,9 @@
               function(key) {
                 return CMS.Models[key];
               }
-            ); 
+            );
     }
-    
+
     , init_context: function() {
       if (!this.context) {
         // Calculate the total number of options
@@ -1411,6 +1462,8 @@
         if (this.options.option_type_menu) {
           can.each(this.options.option_type_menu, function(type) { option_type_count += type.items.length; })
         }
+
+        var display_selection = this.options.option_descriptors[this.options.default_option_descriptor].model.title_plural;
 
         this.context = new can.Observe($.extend({
           objects: this.object_list,
@@ -1424,7 +1477,8 @@
           is_page_instance: false,
           item_selected: false,
           items_selected: 0,
-          filter_list: []
+          filter_list: [],
+          display_selection: display_selection ? display_selection : "Objects"
           }, this.options));
       }
       return this.context;
@@ -1457,7 +1511,9 @@
             self.element.trigger('loaded');
             self.element.find(".results-wrap").cms_controllers_infinite_scroll();
             setTimeout(function() {
-              self.element.find('#search').focus();
+              if (self.emlement) {
+                self.element.find('#search').focus();
+              }
             }, 200);
           });
 
@@ -1497,7 +1553,7 @@
             , option_row = option_column.find('li[data-id=' + option.id + ']')
             , check_box = option_row.find('input.object-check-single')
             ;
-          //Select the item and update the map button  
+          //Select the item and update the map button
           check_box.attr('checked','checked');
           self.update_selected_items(check_box);
         });
@@ -1515,7 +1571,7 @@
           }
         });
     }
-    //Over write the parent class method to select the row. 
+    //Over write the parent class method to select the row.
     //The row is selected by selecting the check box
     , ".option_column li.tree-item click": function(el, ev){}
 
@@ -1538,7 +1594,7 @@
     , "input[type=checkbox].object-check-all click": function(el, ev) {
       var $el = $(el)
         , $check = $(this.element).find('.object-check-single:not(:disabled)');
- 
+
       $check.prop('checked', $el.prop('checked'));
       this.update_selected_items(el, ev);
     }
@@ -1546,7 +1602,7 @@
     , reset_selection_count: function(){
         this.context.attr('item_selected', false);
         this.context.attr('items_selected', 0);
-    } 
+    }
 
     , "#search keyup": function(el, ev) {
         if (ev.which == 13) {
@@ -1605,7 +1661,7 @@
           var models = this.options.all_models;
           return GGRC.Models.Search.search_for_types(current_search_term || '', models, permission_parms)
             .then(function (search_result){
-              var options = [], op1, temp ; 
+              var options = [], op1, temp ;
               if (active_fn()) {
                 for(var i = 0; i < models.length; i++){
                   op1 = search_result.getResultsForType(models[i]);
@@ -1668,7 +1724,7 @@
             [selected]
           ).attach(filter_obj.search_filter)
         );
-        
+
       });
       if (cancel_filter) {
         //missing search term.
@@ -1714,7 +1770,7 @@
           self._start_pager(can.map(options, function(op) {
               return op.instance;
             }), 20, active_fn, draw_fn);
-        });        
+        });
 
       } //end filters.length > 0
       else{
@@ -1777,126 +1833,142 @@
     }
 
     , on_map: $.debounce(500, true, function(el, ev) {
-        var that = this, ajd; 
+        var that = this, ajd;
 
         if(el.hasClass('disabled')){
           return;
         }
-        var join_instance = this.create_join();
-        var its = join_instance.length;
+        var join_instance, its;
         var pass = 0;
         var obj_arr = [];
 
-        if (!(its > 0)) {
+        function map_post_process(obj) {
+          // FIXME: Extension isolation violation
+          if(that.options.mapTaskGroup) {
+            //Modify the object to map to task group
+            var id = obj.object.id,
+                shortName = obj.object.type,
+                new_obj = {};
+                new_obj.id = id;
+                new_obj.constructor = { shortName: shortName };
+
+            obj_arr.push(new_obj);
+          } else {
+            if (!that.options.deferred) {
+              $(document.body).trigger('ajax:flash',
+                { success: that.context.selected_options[0].constructor.shortName + " mapped successfully."});
+            }
+            obj_arr.push(obj);
+          }
+          pass += 1;
+          if(pass == its){
+              if(obj_arr.length >= 1){
+                var obj_set = {};
+                obj_set.multi_map = true;
+                obj_set.arr = obj_arr;
+
+                ////trigger the to add selected objects to task group;
+                that.element.trigger("modal:success", [obj_set, {map_and_save: true}]);
+              }
+              $(that.element).modal_form('hide');
+            }
+        }
+
+        if (its < 1) {
           $(document.body).trigger("ajax:flash", {
             error: "Select an object to map" });
-        } 
+        }
         else {
-          for(var i = 0; i < its; i++){
+          if(that.options.deferred) {
+            join_instance = that.sync_selected_options();
+            its = join_instance.length;
+            can.each(join_instance, map_post_process);
+          } else {
+            join_instance = this.create_join();
+            its = join_instance.length;
+            for(var i = 0; i < its; i++){
             //We have multiple join_instances
-            ajd = join_instance[i].save().done(function(obj) {
-              // FIXME: Extension isolation violation
-              if(that.options.mapTaskGroup) {
-                //Modify the object to map to task group
-                var id = obj.object.id, 
-                    shortName = obj.object.type,
-                    new_obj = {};
-                    new_obj.id = id;
-                    new_obj.constructor.shortName = shortName;
-
-                obj_arr.push(new_obj);
-              }
-              else {
-                $(document.body).trigger('ajax:flash', 
-                 { success: that.context.selected_options[0].constructor.shortName + " mapped successfully."});
-              }
-              pass += 1;
-              if(pass == its){
-                  if(obj_arr.length >= 1){ 
-                    var obj = {};
-                    obj.multi_map = true;
-                    obj.arr = obj_arr;
-                    
-                    ////trigger the to add selected objects to task group;
-                    that.element.trigger("modal:success", [obj, {map_and_save: true}])
+              ajd = join_instance[i].save().done(map_post_process)
+              .fail(function(xhr) {
+                  // Currently, the only error we encounter here is uniqueness
+                  // constraint violations.  Let's use a nicer message!
+                  //that.element.trigger("ajax:flash", { error : xhr.responseText });
+                  //We should never get here, The mapped objects are already checked and disabled
+                  if (that.element) {
+                    var message = "That object is already mapped";
+                    pass += 1;
+                    $(document.body).trigger("ajax:flash", { error: message });
+                    if(pass == its){
+                      $(that.element).modal_form('hide');
+                    }
                   }
-                  $(that.element).modal_form('hide');
-                }
-            })
-            .fail(function(xhr) {
-                // Currently, the only error we encounter here is uniqueness
-                // constraint violations.  Let's use a nicer message!
-                //that.element.trigger("ajax:flash", { error : xhr.responseText });
-                //We should never get here, The mapped objects are already checked and disabled
-                if (that.element) {
-                  var message = "That object is already mapped";
-                  pass += 1;
-                  $(document.body).trigger("ajax:flash", { error: message });
-                  if(pass == its){
-                    $(that.element).modal_form('hide');
-                  }
-                }
-              });
-            this.bindXHRToButton(ajd, el, "Saving, please wait...");
-          }        
+                });
+              this.bindXHRToButton(ajd, el, "Saving, please wait...");
+            }
+          }
         } //End else
 
     })//end on_map
 
 
-    , create_join: function() {
-      //If the object type === allObjects, the option descriptor is not set for mapping, so 
-      //One has to again set option descriptor and then call a mapping
+    , sync_selected_options : function() {
 
-      var $check = $(this.element).find('.object-check-single:checked'),
+      var that = this,
+        $check = $(this.element).find('.object-check-single:checked'),
         selected = $check.filter(function() { return !this.disabled; }),
         len = selected.length;
-      
+
       for (var i = 0; i < len; i++){
         var option =  $(selected[i]).closest('li').data('option');
         this.context.selected_options.push(option);
       }
 
-      var l = this.context.selected_options.length,
-        joins=[];
-      
-      if(l > 0){
-        for(var i = 0; i < l; i++){
-          if (this.context.selected_options[i]) {
-            var context_id = null
-              , context_object;
-  
-            // FIXME: Extension isolation violation
-            if (this.context.selected_object instanceof CMS.Models.TaskGroup) {
-              context_object = this.context.selected_object;
-            } else if (this.context.selected_options[i].constructor.shortName == "Program") {
-              context_object = this.context.selected_options[i];
-            } else {
-              context_object = this.context.selected_object;
-            }
-            if (context_object.context && context_object.context.id) {
-              context_id = context_object.context.id;
-            }
-            if(this.context.option_descriptor.model === "AllObject") {
-              // Get the appropriate option descriptor from all descriptors
-              // Then create the join
-              var model = this.context.selected_options[i].type;
-              var my_descriptor = this.context.option_descriptors[model];
-              if(my_descriptor !== undefined || my_descriptor !== null) {
-                join = my_descriptor.get_new_join(
-                  this.context.selected_object, this.context.selected_options[i], context_id);
-              }
-            }
-            else {
-             join = this.context.option_descriptor.get_new_join(
-                this.context.selected_object, this.context.selected_options[i], context_id);
-            }
-            
-            joins.push(join);
+      return this.context.selected_options;
+    }
+
+    , create_join: function() {
+      //If the object type === allObjects, the option descriptor is not set for mapping, so
+      //One has to again set option descriptor and then call a mapping
+
+      var that = this,
+        joins = can.map(this.sync_selected_options(), function(option) {
+          var join, context_object, model, descriptor
+              context_id = null
+              ;
+
+          if (!option) {
+            return;
           }
-        }
-        return joins;
-      }
+
+          // FIXME: Extension isolation violation
+          if (that.context.selected_object instanceof CMS.Models.TaskGroup) {
+            context_object = that.context.selected_object;
+          } else if (option.constructor.shortName == "Program") {
+            context_object = option;
+          } else {
+            context_object = that.context.selected_object;
+          }
+          if (context_object.context && context_object.context.id) {
+            context_id = context_object.context.id;
+          }
+          if(that.context.option_descriptor.model === "AllObject") {
+            // Get the appropriate option descriptor from all descriptors
+            // Then create the join
+            model = option.type;
+            descriptor = that.context.option_descriptors[model];
+            if(descriptor !== undefined || descriptor !== null) {
+              join = descriptor.get_new_join(
+                that.context.selected_object, option, context_id);
+            }
+          }
+          else {
+           join = that.context.option_descriptor.get_new_join(
+              that.context.selected_object, option, context_id);
+          }
+
+          return join;
+        });
+      return joins;
     }
 
     , autocomplete_select : function(el, ev, ui) {
@@ -1907,11 +1979,11 @@
       this.context.attr(el.attr("name"), ui.item);
     }
 
-  }); 
-  
+  });
+
   multiselect_descriptor_view_option = {
     "Person": {
-        column_view : GGRC.mustache_path + "/selectors/multitype_multiselect_option_column.mustache", 
+        column_view : GGRC.mustache_path + "/selectors/multitype_multiselect_option_column.mustache",
         items_view  : GGRC.mustache_path + "/wf_people/people_items.mustache"
     }
   }
@@ -1945,7 +2017,7 @@
 
       //  If we have duplicate options, we want to use the first, so return
       //    early.
-      //  Also return now if the descriptor is explicitly excluded from the 
+      //  Also return now if the descriptor is explicitly excluded from the
       //    set of descriptors for this modal.
       if (option_descriptors[option_model_name]
           || ~can.inArray(option_model_name, exclude_option_types)
@@ -1973,7 +2045,7 @@
           , extra_options);
     });
 
-	  option_set.mapTaskGroup = data.mapTaskGroup;
+    option_set.mapTaskGroup = data.mapTaskGroup;
     option_set.option_descriptors = option_descriptors;
     return option_set;
   }
@@ -1990,23 +2062,25 @@
 
       can.each($this.data(), function(v, k) {
         data_set[k.replace(/[A-Z]/g, function(s) { return "_" + s.toLowerCase(); })] = v; //this is just a mapping of keys to underscored keys
-        if(!/[A-Z]/.test(k)) //if we haven't changed the key at all, don't delete the original
+        if(/[A-Z]/.test(k)) //if we haven't changed the key at all, don't delete the original
           delete data_set[k];
       });
 
 
       //set up the options for new multitype Object  modal
-      var column_view = GGRC.mustache_path + "/selectors/multitype_multiselect_option_column.mustache", 
+      var column_view = GGRC.mustache_path + "/selectors/multitype_multiselect_option_column.mustache",
       item_view =  GGRC.mustache_path + "/selectors/multitype_multiselect_option_items.mustache" ;
 
       options = get_object_multitype_option_set(
         data_set.join_object_type, data_set.join_option_type, data_set, column_view, item_view);
-      
+
       options.selected_object = CMS.Models.get_instance(
           data_set.join_object_type, data_set.join_object_id);
 
       options.binding = options.selected_object.get_binding(
-          data_set.join_mapping)
+          data_set.join_mapping);
+
+      options.deferred = data_set.deferred;
 
       //the below line is not needed, verify and clean up
       //options.object_params = $this.data("object-params");
@@ -2061,13 +2135,14 @@
     */
     , " modal:success" : function(el, ev, data, options) {
       //no op
+      this.options.$trigger.trigger("modal:success", [data, options]);
     }
-    
+
     , triggerModalSearch: function(){
       // Remove Search Criteria text
       $('.results-wrap span.info').hide();
       var ctx = this.context;
-      
+
       //Get the selected object value
       var selected = $("select.option-type-selector").val(),
         self = this,
@@ -2075,7 +2150,7 @@
         term = ctx.option_search_term || "",
         filters = [],
         cancel_filter;
-      
+
       this.set_option_descriptor(selected);
 
       ctx.filter_list.each(function(filter_obj) {
@@ -2143,7 +2218,7 @@
         // Object selected count and Add selected button should reset.
         // User need to make their selection again
         this.reset_selection_count();
-        
+
         if (filters.length === 1){
           loader = filters[0];
         }
@@ -2169,7 +2244,7 @@
               return op.instance;
             }), 20, active_fn, draw_fn);
         });
-      } 
+      }
       else {
         //Object selected count and Add selected button should reset.
         //User need to make their selection again
@@ -2183,9 +2258,9 @@
         this.constructor.last_option_search_term = term;
       }
     }
-   
+
   });
-  
+
 
   $(function() {
     $('body').on('click', '[data-toggle="multitype-object-modal-selector"]', function(e) {
@@ -2196,22 +2271,24 @@
 
       can.each($this.data(), function(v, k) {
         data_set[k.replace(/[A-Z]/g, function(s) { return "_" + s.toLowerCase(); })] = v; //this is just a mapping of keys to underscored keys
-        if(!/[A-Z]/.test(k)) //if we haven't changed the key at all, don't delete the original
+        if(/[A-Z]/.test(k)) //if we haven't changed the key at all, don't delete the original
           delete data_set[k];
       });
 
 
       //set up the options for new multitype Object  modal
-      var column_view = GGRC.mustache_path + "/selectors/object_selector_option_column.mustache", 
+      var column_view = GGRC.mustache_path + "/selectors/object_selector_option_column.mustache",
       item_view =  GGRC.mustache_path + "/selectors/object_selector_option_items.mustache" ;
       options = get_object_multitype_option_set(
         data_set.join_object_type, data_set.join_option_type, data_set, column_view, item_view);
-      
-      options.selected_object = CMS.Models.get_instance(
+
+      options.selected_object = data_set.join_object || CMS.Models.get_instance(
           data_set.join_object_type, data_set.join_object_id);
 
       options.binding = options.selected_object.get_binding(
-          data_set.join_mapping)
+          data_set.join_mapping);
+
+      options.deferred = data_set.deferred;
 
       //The below line is not needed, verify and clean up
       //options.object_params = $this.data("object-params");
@@ -2226,7 +2303,7 @@
     });
   });
 
-  
+
 
 
 })(window.can, window.can.$);

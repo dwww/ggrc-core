@@ -1107,6 +1107,14 @@ ul.new-tree {
       }
     }
   }
+  .custom-state {
+    ul.new-tree {
+      li.tree-item {
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+  }
 }
 .selector-list ul.new-tree li.tree-item .item-content {
   line-height:18px;

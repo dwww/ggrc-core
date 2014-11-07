@@ -43,7 +43,7 @@
             </div>
           </div>
         </div>
-        <div class="span4">
+        <div class="span3">
           <div class="item-data">
             {{#using audit=instance.audit}}
             {{#with_mapping "audit_object_object" instance}}
@@ -74,7 +74,7 @@
             {{/using}}
           </div>
         </div>
-        <div class="span4">
+        <div class="span5">
           <div class="control-wrap">
             <div class="date">
               {{#if instance.due_on}}
@@ -82,6 +82,33 @@
               {{/if}}
             </div>
             <div class="request-control" {{ (el) -> el.ggrc_controllers_quick_form({ instance : el.closest('[data-model]').data('model')}); }}>
+              {{! taken from responses/tree_footer}}
+              {{#if allow_creating}}
+              {{^if_equals instance.status 'Draft'}}
+              &nbsp;&nbsp;
+              {{#is_allowed '__GGRC_ADMIN__' model.shortName context=instance.context.id}}
+                      {{#using audit=parent_instance.audit}}
+                      <a href="javascript://" class="section-create btn btn-primary" data-toggle="modal-ajax-form" data-modal-reset="reset" data-modal-class="modal-wide" data-object-singular="{{instance.response_model_class}}" data-object-plural="responses" data-object-params='{ "{{instance.class.table_singular}}": {"id" : {{instance.id}}, "type" : "{{instance.class.model_singular}}" }, "context": { "id" : {{firstexist audit.context.id "null"}}, "href" : "{{audit.context.href}}", "type" : "{{audit.context.type}}" } }'>
+                        Create Response
+                      </a>
+                      {{/using}}
+              {{else}}
+                {{^if_auditor instance}}
+                {{#if_helpers '\
+                  #is_allowed' 'create' model.shortName _0_context=instance.context.id '\
+                  and ^if_equals' instance.status 'Accepted'}}
+                {{#if_can_edit_request instance}}
+                      {{#using audit=instance.audit}}
+                      <a href="javascript://" class="section-create btn btn-primary" data-toggle="modal-ajax-form" data-modal-reset="reset" data-modal-class="modal-wide" data-object-singular="{{instance.response_model_class}}" data-object-plural="responses" data-object-params='{ "{{instance.class.table_singular}}": {"id" : {{instance.id}}, "type" : "{{instance.class.model_singular}}" }, "context": { "id" : {{firstexist audit.context.id "null"}}, "href" : "{{audit.context.href}}", "type" : "{{audit.context.type}}" } }'>
+                        Create Response
+                      </a>
+                      {{/using}}
+                {{/if_can_edit_request}}
+                {{/if_helpers}}
+                {{/if_auditor}}
+              {{/is_allowed}}}
+              {{/if_equals}}
+              {{/if}}
               {{#using audit=instance.audit}}
               {{#with_mapping "authorizations" audit}}
               {{#if_equals instance.status "Draft"}}
@@ -93,14 +120,14 @@
               {{/if_equals}}
               {{#if_equals instance.status "Requested"}}
                 {{#if_can_edit_request instance}}
-                <button data-name="status" data-value="Responded" class="btn btn-primary {{instance._disabled}} {{^instance.responses.length}}disabled{{/instance.responses.length}}">Respond</button>
+                <button data-name="status" data-value="Responded" class="btn btn-primary {{instance._disabled}} {{^instance.responses.length}}disabled{{/instance.responses.length}}">Submit responses</button>
                 {{else}}
                 <small class="gray"><em>{{instance.status}}</em></small>
                 {{/if_can_edit_request}}
               {{/if_equals}}
               {{#if_equals instance.status "Amended Request"}}
                 {{#if_can_edit_request instance}}
-                <button data-name="status" data-value="Updated Response" class="btn btn-primary {{instance._disabled}}">Respond</button>
+                <button data-name="status" data-value="Updated Response" class="btn btn-primary {{instance._disabled}}">Submit responses</button>
                 {{else}}
                 <small class="gray"><em>Amended</em></small>
                 {{/if_can_edit_request}}
@@ -132,33 +159,6 @@
               {{/instance._undo.0}}
               {{/with_mapping}}
               {{/using}}
-              {{! taken from responses/tree_footer}}
-              {{#if allow_creating}}
-              {{^if_equals instance.status 'Draft'}}
-              &nbsp;&nbsp;
-              {{#is_allowed '__GGRC_ADMIN__' model.shortName context=instance.context.id}}
-                      {{#using audit=parent_instance.audit}}
-                      <a href="javascript://" class="section-create btn btn-primary" data-toggle="modal-ajax-form" data-modal-reset="reset" data-modal-class="modal-wide" data-object-singular="{{instance.response_model_class}}" data-object-plural="responses" data-object-params='{ "{{instance.class.table_singular}}": {"id" : {{instance.id}}, "type" : "{{instance.class.model_singular}}" }, "context": { "id" : {{firstexist audit.context.id "null"}}, "href" : "{{audit.context.href}}", "type" : "{{audit.context.type}}" } }'>
-                        Create Response
-                      </a>
-                      {{/using}}
-              {{else}}
-                {{^if_auditor instance}}
-                {{#if_helpers '\
-                  #is_allowed' 'create' model.shortName _0_context=instance.context.id '\
-                  and ^if_equals' instance.status 'Accepted'}}
-                {{#if_can_edit_request instance}}
-                      {{#using audit=instance.audit}}
-                      <a href="javascript://" class="section-create btn btn-primary" data-toggle="modal-ajax-form" data-modal-reset="reset" data-modal-class="modal-wide" data-object-singular="{{instance.response_model_class}}" data-object-plural="responses" data-object-params='{ "{{instance.class.table_singular}}": {"id" : {{instance.id}}, "type" : "{{instance.class.model_singular}}" }, "context": { "id" : {{firstexist audit.context.id "null"}}, "href" : "{{audit.context.href}}", "type" : "{{audit.context.type}}" } }'>
-                        Create Response
-                      </a>
-                      {{/using}}
-                {{/if_can_edit_request}}
-                {{/if_helpers}}
-                {{/if_auditor}}
-              {{/is_allowed}}}
-              {{/if_equals}}
-              {{/if}}
             </div>
           </div>
         </div>
@@ -212,7 +212,7 @@
                 and ^if_auditor" instance _1_include_admin=false "\
                 or #is_allowed" "__GGRC_ADMIN__" instance }}
                 <div class="objective-selector">
-                  <input type="text" name="assignee.name" data-lookup="Person" class="input-block-level search-icon" placeholder="Enter text to search for Assignee" value="{{firstnonempty assignee.name assignee.email ''}}">
+                  <input type="text" name="assignee.name" data-lookup="Person" class="input-block-level search-icon" placeholder="Enter text to search for Assignee" null-if-empty="true" value="{{firstnonempty assignee.name assignee.email ''}}">
                 </div>
               {{else}}
                 <p class="read-only oneline">

@@ -11,14 +11,12 @@ dashboard-js-spec-files:
   - controllers/gdrive_workflows_controller_spec.js
 
 dashboard-js-template-files:
-  - audits/gdrive_info.mustache
   - responses/gdrive_upload_evidence.mustache
-  - programs/gdrive_info.mustache
   - responses/gdrive_evidence_tree.mustache
   - meetings/gcal_info.mustache
-  - requests/gdrive_info.mustache
   - people/gplus_actions.mustache
   - people/gplus_photo.mustache
   - gdrive/auth_button.mustache
   - gdrive/gapi_errors.mustache
+  - gdrive/gdrive_folder.mustache
   - roles/gdrive_option_detail.mustache

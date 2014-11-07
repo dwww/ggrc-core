@@ -12,10 +12,8 @@
     </a>
   </div>
   <h2>
-    {{#if_equals option_type_count 1}}
-      {{#option_type_menu}}{{#items}}
-          Map {{model_display}} to {{selected_object.class.title_singular}}
-      {{/#items}}{{/option_type_menu}}
+    {{#if_equals option_type_count 2}}
+          Map {{display_selection}} to {{selected_object.class.title_singular}}
     {{else}}
       Map Object {{! modal_title }}
     {{/if_equals}}

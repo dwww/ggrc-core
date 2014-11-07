@@ -426,6 +426,13 @@ Mustache.registerHelper("renderLive", function(template, context, options) {
   return can.view.render(template, options.contexts);
 });
 
+// Renders one or more "hooks", which are templates registered under a
+//  particular key using GGRC.register_hook(), using the current context.
+//  Hook keys can be composed with dot separators by passing in multiple
+//  positional parameters.
+//
+// Example: {{{render_hooks 'Audit' 'test_info'}}}  renders all hooks registerd
+//  with GGRC.register_hook("Audit.test_info", <template path>)
 Mustache.registerHelper("render_hooks", function() {
   var args = can.makeArray(arguments),
       options = args.splice(args.length - 1, 1)[0],
@@ -434,6 +441,19 @@ Mustache.registerHelper("render_hooks", function() {
   return can.map(can.getObject(hook, GGRC.hooks) || [], function(hook_tmpl) {
     return can.Mustache.getHelper("renderLive", options.contexts).fn(hook_tmpl, options.contexts, options);
   }).join("\n");
+});
+
+//Checks whether any hooks are registered for a particular key
+Mustache.registerHelper("if_hooks", function() {
+  var args = can.makeArray(arguments),
+      options = args.splice(args.length - 1, 1)[0],
+      hook = can.map(args, Mustache.resolve).join(".");
+
+  if((can.getObject(hook, GGRC.hooks) || []).length > 0) {
+    return options.fn(options.contexts);
+  } else {
+    return options.inverse(options.contexts);
+  }
 });
 
 var defer_render = Mustache.defer_render = function defer_render(tag_prefix, funcs, deferred) {
@@ -1264,8 +1284,8 @@ function resolve_computed(maybe_computed, always_resolve) {
 }
 
 Mustache.registerHelper("attach_spinner", function(spin_opts, styles) {
-  spin_opts = resolve_computed(spin_opts);
-  styles = resolve_computed(styles);
+  spin_opts = Mustache.resolve(spin_opts);
+  styles = Mustache.resolve(styles);
   spin_opts = typeof spin_opts === "string" ? JSON.parse(spin_opts) : {};
   styles = typeof styles === "string" ? styles : "";
   return function(el) {
@@ -1728,32 +1748,44 @@ Mustache.registerHelper("person_owned", function(owner_id, options) {
     return options.inverse(options.contexts);
 });
 
-Mustache.registerHelper("default_audit_title", function(title, program, options) {
-  var computed_title = title()
-    , computed_program = resolve_computed(program)
-    , default_title
+Mustache.registerHelper("default_audit_title", function(instance, options) {
+  var program, default_title, current_title
     , index = 1
     ;
+    
+    instance = Mustache.resolve(instance);
+    program = instance.attr("program");
+ 
+  if(!instance._transient) {
+    instance.attr("_transient", { default_title : "" });
+  }
 
-  if(typeof computed_program === 'undefined'){
+  if(program == null){
     // Mark the title to be populated when computed_program is defined,
     // returning an empty string here would disable the save button.
-    return 'undefined';
+    instance.attr("title", "");
+    instance.attr("_transient.default_title", instance.title);
+    return;
   }
-  if(typeof computed_title !== 'undefined' && computed_title !== 'undefined'){
-    return computed_title;
+  if(instance._transient.default_title !== instance.title) {
+    return;
   }
-  program = resolve_computed(program) || {title : "program"};
 
-  default_title = new Date().getFullYear() + ": " + program.title + " - Audit";
+  program = program.reify();
 
-  // Count the current number of audits with default_title
-  $.map(CMS.Models['Audit'].cache, function(audit){
-    if(audit.title && audit.title.indexOf(default_title) === 0){
-      index += 1;
-    }
+  new RefreshQueue().enqueue(program).trigger().then(function() {
+
+    default_title = new Date().getFullYear() + ": " + program.title + " - Audit";
+
+    // Count the current number of audits with default_title
+    $.map(CMS.Models['Audit'].cache, function(audit){
+      if(audit.title && audit.title.indexOf(default_title) === 0){
+        index += 1;
+      }
+    });
+    instance.attr("title", new Date().getFullYear() + ": " + program.title + " - Audit " + index);
+    instance.attr("_transient.default_title", instance.title);
   });
-  return new Date().getFullYear() + ": " + program.title + " - Audit " + index;
 });
 
 Mustache.registerHelper('param_current_location', function() {
@@ -2155,8 +2187,8 @@ Mustache.registerHelper("if_can_edit_request", function(instance, options){
         , update = Permission.is_allowed("update", instance)
         , map = Permission.is_allowed("mapping", instance)
         , create = Permission.is_allowed("creating", instance)
-        , assignee = instance.assignee.id === GGRC.current_user.id
-        , audit_lead = audit.contact.id === GGRC.current_user.id
+        , assignee = !!instance.assignee && instance.assignee.id === GGRC.current_user.id
+        , audit_lead = !!audit.contact && audit.contact.id === GGRC.current_user.id
         , auditor = can.map(
                       auditors || [],
                       function(auditor) {
@@ -2504,5 +2536,29 @@ Mustache.registerHelper("toggle", function(compute, options) {
   }
 });
 
+can.each({
+  "has_pending_addition": "add",
+  "has_pending_removal": "remove"
+}, function(how, fname) {
+  Mustache.registerHelper(fname, function(object, option_instance, options) {
+    if(!options) {
+      options = option_instance;
+      option_instance = object;
+      object = options.context;
+    }
+    option_instance = Mustache.resolve(option_instance);
+    object = Mustache.resolve(object);
+
+    if(object._pending_joins && can.map(
+      object._pending_joins,
+      function(pj) {
+        return pj.how === how && pj.what === option_instance ? option_instance : undefined;
+      }).length > 0) {
+      return options.fn(options.contexts);
+    } else {
+      return options.inverse(options.contexts);
+    }
+  });
+});
 
 })(this, jQuery, can);

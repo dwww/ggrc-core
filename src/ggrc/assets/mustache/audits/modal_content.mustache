@@ -56,9 +56,7 @@
         <i class="grcicon-help-black" rel="tooltip" title="Give new {{model.model_plural}} a name that's easy to search for and indicates the main goals of this {{model.model_singular}}."></i>
       </label>
       {{#if new_object_form}}
-        {{#using program_reified=instance.program}}
-        <input class="input-block-level" placeholder="Enter Title" name="title" type="text" value="{{default_audit_title title program_reified}}" tabindex="2" autofocus>
-        {{/using}}
+        <input class="input-block-level" placeholder="Enter Title" name="title" type="text" value="{{title}}" tabindex="2" autofocus {{default_audit_title instance}}>
       {{else}}
         <input class="input-block-level" placeholder="Enter Title" name="title" type="text" value="{{title}}" tabindex="2" autofocus>
       {{/if}}
@@ -101,9 +99,9 @@
       <label class="spacing">
         <a href="javascript://" class="field-hide" tabindex="-1">hide</a>
         <input type="checkbox" name="auto_generate" value="checked" tabindex="5">
-        Auto-Generate PBC List based on Objectives 
+        Auto-Generate Requests based on Controls
         <span class="small">
-          <a href="javascript://">({{#using program=instance.program}}{{#with_mapping 'objectives' program}}{{objectives.length}}{{/with_mapping}}{{/using}} Objectives Found)
+          <a href="javascript://">({{#using program=instance.program}}{{#with_mapping 'controls' program}}{{controls.length}}{{/with_mapping}}{{/using}} Controls Found)
           </a>
         </span>
       </label>

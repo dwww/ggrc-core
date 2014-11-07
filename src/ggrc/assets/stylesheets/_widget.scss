@@ -1139,6 +1139,27 @@
       padding: 15px 40px 0 40px;
     }
   }
+  .tier-2-info-content {
+    .custom-state {
+      h6 {
+        &.border {
+          border-bottom: 1px solid $infoMessageBorder;
+        }
+      }
+      .zero-state {
+        margin: 0;
+        background: none;
+        border: none;
+        padding-bottom: 0;
+        h2 {
+          padding: 0;
+          text-align: left;
+          line-height: 26px;
+          font-size: 14px;
+        }
+      }
+    }
+  }
 }
 
 // new filters (former - advanced-filters)

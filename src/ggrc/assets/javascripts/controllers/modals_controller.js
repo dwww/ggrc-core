@@ -296,14 +296,17 @@ can.Control("GGRC.Controllers.Modals", {
   , "input:not(isolate-form input), textarea:not(isolate-form textarea), select:not(isolate-form select) change" : function(el, ev) {
       this.options.instance.removeAttr("_suppress_errors");
       // Set the value if it isn't a search field
-      if(!el.hasClass("search-icon")){
+      if(!el.hasClass("search-icon")
+        || el.is("[null-if-empty]")
+           && (!el.val() || el.val().length === 0)
+      ) {
         this.set_value_from_element(el);
       }
   }
 
   , "input:not([data-lookup], isolate-form *), textarea keyup" : function(el, ev) {
-      if (el.prop('value').length == 0 ||
-        (typeof el.attr('value') !== 'undefined' && el.attr('value').length == 0)) {
+      if (el.prop('value').length === 0 ||
+        (typeof el.attr('value') !== 'undefined' && el.attr('value').length === 0)) {
         this.set_value_from_element(el);
       }
   }
@@ -320,7 +323,7 @@ can.Control("GGRC.Controllers.Modals", {
       var $el = $(el)
         , name = $el.attr('name')
         , value = $el.val()
-        , that = this;
+        , that = this
         ;
 
       // If no model is specified, short circuit setting values
@@ -561,8 +564,8 @@ can.Control("GGRC.Controllers.Modals", {
     //select the element with tab index and hide it
 
     if(this.options.reset_visible){//some elements are hidden
-      var $selected, str, tabindex,
-        $form = $(this.element).find('form');
+      var $selected, str, tabindex;
+
       for (var i = 0; i < this.options.ui_array.length; i++){
         if(this.options.ui_array[i] == 1){
           tabindex = i+1;
@@ -618,13 +621,11 @@ can.Control("GGRC.Controllers.Modals", {
         if(ajd) {
           var save_close_btn = $(this.element).find("a.btn[data-toggle=modal-submit]");
           var save_addmore_btn = $(this.element).find("a.btn[data-toggle=modal-submit-addmore]");
-
-          //$(save_close_btn).attr("disabled", true);
-          $(save_close_btn).addClass("disabled pending-ajax");
-          //$(save_addmore_btn).attr("disabled", true);
-          $(save_addmore_btn).addClass("disabled pending-ajax");
-
           var modal_backdrop = this.element.data("modal_form").$backdrop;
+
+          $(save_addmore_btn).addClass("disabled pending-ajax");
+          $(save_close_btn).addClass("disabled pending-ajax");
+
           this.bindXHRToBackdrop(ajd, modal_backdrop, "Saving, please wait...");
         }
       }
@@ -658,6 +659,8 @@ can.Control("GGRC.Controllers.Modals", {
       .done (function() {
         // If the modal is closed early, the element no longer exists
         if (that.element) {
+          var $form = $(that.element).find('form');
+          $form.trigger('reset');
           // This is to trigger `focus_first_element` in modal_ajax handling
           that.element.trigger("loaded");
         }
@@ -665,6 +668,8 @@ can.Control("GGRC.Controllers.Modals", {
         that.options.instance._transient || that.options.instance.attr("_transient", new can.Observe({}));
         that.options.instance.form_preload && that.options.instance.form_preload(that.options.new_object_form);
       })
+      .then(this.proxy("apply_object_params"))
+      .then(this.proxy("serialize_form"))
       .then(that.proxy("autocomplete"));
 
     this.restore_ui_status();
@@ -752,6 +757,9 @@ can.Control("GGRC.Controllers.Modals", {
         ev.preventDefault();
         return false;
       }
+      if (this.options.instance) {
+        delete this.options.instance._pending_joins;
+      }
       if (this.options.instance instanceof can.Model
           // Ensure that this modal was hidden and not a child modal
           && ev.target === this.element[0]
@@ -811,6 +819,7 @@ can.Component.extend({
   },
   events: {
     init: function() {
+      var key;
       this.scope.attr("controller", this);
 
       if (!this.scope.instance) {
@@ -837,14 +846,15 @@ can.Component.extend({
         );
         //this.scope.instance.attr("_transient." + this.scope.mapping, this.scope.list);
       } else {
-        if(!this.scope.parent_instance._transient[this.scope.instance_attr + "_" + this.scope.mapping]) {
+        key = this.scope.instance_attr + "_" + (this.scope.mapping || this.scope.source_mapping);
+        if(!this.scope.parent_instance._transient[key]) {
           this.scope.attr("list", []);
           this.scope.parent_instance.attr(
-            "_transient." + this.scope.instance_attr + "_" + this.scope.mapping,
+            "_transient." + key,
             this.scope.list
             );
         } else {
-          this.scope.attr("list", this.scope.parent_instance._transient[this.scope.instance_attr + "_" + this.scope.mapping]);
+          this.scope.attr("list", this.scope.parent_instance._transient[key]);
         }
       }
       this.options.parent_instance = this.scope.parent_instance;
@@ -861,10 +871,12 @@ can.Component.extend({
         can.each(
           changes,
           function(item) {
+            var mapping = that.scope.mapping || GGRC.Mappings.get_canonical_mapping_name(that.scope.instance.constructor.shortName, item.what.constructor.shortName);
+
             if(item.how === "add") {
-              that.scope.instance.mark_for_addition(that.scope.mapping, item.what, item.extra);
+              that.scope.instance.mark_for_addition(mapping, item.what, item.extra);
             } else {
-              that.scope.instance.mark_for_deletion(that.scope.mapping, item.what);
+              that.scope.instance.mark_for_deletion(mapping, item.what);
             }
           }
         );
@@ -876,7 +888,8 @@ can.Component.extend({
     // this works like autocomplete_select on all modal forms and
     //  descendant class objects.
     autocomplete_select : function(el, event, ui) {
-      var that = this,
+      var mapping,
+          that = this,
           extra_attrs = can.reduce(
                           this.element
                           .find("input:not([data-mapping], [data-lookup])")
@@ -888,7 +901,8 @@ can.Component.extend({
       if (that.scope.deferred) {
         that.scope.changes.push({ what: ui.item, how: "add", extra: extra_attrs });
       } else {
-        that.scope.instance.mark_for_addition(that.scope.mapping, ui.item, extra_attrs);
+        mapping = that.scope.mapping || GGRC.Mappings.get_canonical_mapping_name(that.scope.instance.constructor.shortName, ui.item.constructor.shortName);
+        that.scope.instance.mark_for_addition(mapping, ui.item, extra_attrs);
       }
       that.scope.list.push(ui.item);
       that.scope.attr("show_new_object_form", false);
@@ -899,11 +913,13 @@ can.Component.extend({
       can.map(
         el.find('.result'),
         function(result_el) {
-          var obj = $(result_el).data("result");
+          var mapping,
+              obj = $(result_el).data("result");
           if (that.scope.deferred) {
             that.scope.changes.push({ what: obj, how: "remove" });
           } else {
-            that.scope.instance.mark_for_deletion(that.scope.mapping, obj);
+            mapping = that.scope.mapping || GGRC.Mappings.get_canonical_mapping_name(that.scope.instance.constructor.shortName, obj.constructor.shortName);
+            that.scope.instance.mark_for_deletion(mapping, obj);
           }
           for(i = that.scope.list.length; i >= 0; i--) {
             if(that.scope.list[i] === obj) {
@@ -931,7 +947,7 @@ can.Component.extend({
       }
     },
     "a[data-toggle=submit]:not(.disabled) click": function(el, ev) {
-      var obj,
+      var obj, mapping,
           that = this,
           binding = this.scope.instance.get_binding(this.scope.mapping),
           extra_attrs = can.reduce(
@@ -959,10 +975,27 @@ can.Component.extend({
       if (that.scope.deferred) {
         that.scope.changes.push({ what: obj, how: "add", extra: extra_attrs });
       } else {
-        that.scope.instance.mark_for_addition(that.scope.mapping, obj, extra_attrs);
+        mapping = that.scope.mapping || GGRC.Mappings.get_canonical_mapping_name(that.scope.instance.constructor.shortName, obj.constructor.shortName);
+        that.scope.instance.mark_for_addition(mapping, obj, extra_attrs);
       }
       that.scope.list.push(obj);
       that.scope.attr("attributes", {});
+    },
+    "a[data-object-source] modal:success": function(el, ev, data) {
+      var mapping,
+          that = this;
+      ev.stopPropagation();
+
+      can.each(data.arr || [data], function(obj) {
+
+        if (that.scope.deferred) {
+          that.scope.changes.push({ what: obj, how: "add" });
+        } else {
+          mapping = that.scope.mapping || GGRC.Mappings.get_canonical_mapping_name(that.scope.instance.constructor.shortName, obj.constructor.shortName);
+          that.scope.instance.mark_for_addition(mapping, obj);
+        }
+        that.scope.list.push(obj);
+      });
     },
     ".ui-autocomplete-input modal:success" : function(el, ev, data, options) {
       var that = this,
@@ -980,10 +1013,12 @@ can.Component.extend({
                           }, {});
 
       can.each(data.arr || [data], function(obj) {
+        var mapping;
         if (that.scope.deferred) {
           that.scope.changes.push({ what: obj, how: "add", extra: extra_attrs });
         } else {
-          that.scope.instance.mark_for_addition(that.scope.mapping, obj, extra_attrs);
+          mapping = that.scope.mapping || GGRC.Mappings.get_canonical_mapping_name(that.scope.instance.constructor.shortName, obj.constructor.shortName);
+          that.scope.instance.mark_for_addition(mapping, obj, extra_attrs);
         }
         that.scope.list.push(obj);
         that.scope.attr("attributes", {});

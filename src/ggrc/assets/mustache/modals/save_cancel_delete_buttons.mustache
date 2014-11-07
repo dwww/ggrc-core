@@ -33,8 +33,12 @@
             <a tabindex="25" class="btn btn-primary preventdoubleclick {{#instance.computed_unsuppressed_errors}}disabled{{/instance.computed_unsuppressed_errors}}" data-toggle="modal-submit" href="javascript://">Save & Close</a>
           {{/new_object_form}}
           {{#new_object_form}}
-            <a tabindex="24" class="btn btn-primary preventdoubleclick {{#instance.computed_unsuppressed_errors}}disabled{{/instance.computed_unsuppressed_errors}}" data-toggle="modal-submit-addmore" href="javascript://">Save & Add Another</a>
-            <a tabindex="25" class="btn btn-primary preventdoubleclick {{#instance.computed_unsuppressed_errors}}disabled{{/instance.computed_unsuppressed_errors}}" data-toggle="modal-submit" href="javascript://">Save & Close</a>
+            {{#if_match model.model_singular 'Request|DocumentationResponse|InterviewResponse'}}
+              <a tabindex="25" class="btn btn-primary preventdoubleclick {{#instance.computed_unsuppressed_errors}}disabled{{/instance.computed_unsuppressed_errors}}" data-toggle="modal-submit" href="javascript://">Save & Close</a>
+            {{else}}
+              <a tabindex="24" class="btn btn-primary preventdoubleclick {{#instance.computed_unsuppressed_errors}}disabled{{/instance.computed_unsuppressed_errors}}" data-toggle="modal-submit-addmore" href="javascript://">Save & Add Another</a>
+              <a tabindex="25" class="btn btn-primary preventdoubleclick {{#instance.computed_unsuppressed_errors}}disabled{{/instance.computed_unsuppressed_errors}}" data-toggle="modal-submit" href="javascript://">Save & Close</a>
+            {{/if_match}}
           {{/new_object_form}}
         {{/mapping}}
       </div>

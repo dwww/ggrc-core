@@ -174,10 +174,18 @@ def update_cycle_dates(cycle):
           ctgo.cycle_task_group_object_tasks)
       ctgo.next_due_date = _get_min_end_date(
           ctgo.cycle_task_group_object_tasks)
-    ctg.start_date, ctg.end_date = _get_date_range(
-        ctg.cycle_task_group_objects)
-    ctg.next_due_date = _get_min_next_due_date(
-        ctg.cycle_task_group_objects)
+
+    if len(ctg.cycle_task_group_objects) == 0:
+      # Handle case where cycle task group has no mapped objects
+      ctg.start_date, ctg.end_date = _get_date_range(
+          ctg.cycle_task_group_tasks)
+      ctg.next_due_date = _get_min_end_date(
+          ctg.cycle_task_group_tasks)
+    else:
+      ctg.start_date, ctg.end_date = _get_date_range(
+          ctg.cycle_task_group_objects)
+      ctg.next_due_date = _get_min_next_due_date(
+          ctg.cycle_task_group_objects)
   cycle.start_date, cycle.end_date = _get_date_range(cycle.cycle_task_groups)
   cycle.next_due_date = _get_min_next_due_date(cycle.cycle_task_groups)
 

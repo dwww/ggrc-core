@@ -1088,6 +1088,28 @@ $(window).load(function(){
 
   });
 
+  // top nav dropdown position
+  function dropdownPosition() {
+    var $this = $(this),
+        $dropdown = $this.closest(".hidden-widgets-list").find(".dropdown-menu"),
+        $menu_item = $dropdown.find(".inner-nav-item").find("a"),
+        offset = $this.offset(),
+        win = $(window),
+        win_width = win.width();
+
+    if(win_width - offset.left < 322) {
+      $dropdown.addClass("right-pos");
+    } else {
+      $dropdown.removeClass("right-pos");
+    }
+    if($menu_item.length === 1) {
+      $dropdown.addClass("one-item");
+    } else {
+      $dropdown.removeClass("one-item");
+    }
+  }
+  $(".dropdown-toggle").on("click", dropdownPosition);
+
 });
 
 jQuery(function($){

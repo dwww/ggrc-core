@@ -786,12 +786,16 @@
 
         binding.source_binding.list.bind("add", function(ev, results) {
           binding.refresh_instances().done(function() {
-            can.map(can.makeArray(results), function(result) {
-              var new_result = self.make_result(result.instance, [result], binding);
-              new_result.compute = can.compute(function() {
-                return self.filter_fn(result);
-              }).bind("change", $.proxy(self, "process_result", binding, result, new_result));
-              self.process_result(binding, result, new_result, new_result.compute());
+            new RefreshQueue().enqueue(
+              can.map(results, function(res) { return res.instance; })
+            ).trigger().done(function(){
+              can.map(can.makeArray(results), function(result) {
+                var new_result = self.make_result(result.instance, [result], binding);
+                new_result.compute = can.compute(function() {
+                  return self.filter_fn(result);
+                }).bind("change", $.proxy(self, "process_result", binding, result, new_result));
+                self.process_result(binding, result, new_result, new_result.compute());
+              });
             });
           });
         });
@@ -809,12 +813,16 @@
 
         return binding.source_binding.refresh_instances()
           .then(function(results) {
-            can.map(can.makeArray(results), function(result) {
-              var new_result = self.make_result(result.instance, [result], binding);
-              new_result.compute = can.compute(function() {
-                return self.filter_fn(result);
-              }).bind("change", $.proxy(self, "process_result", binding, result, new_result));
-              self.process_result(binding, result, new_result, new_result.compute());
+            new RefreshQueue().enqueue(
+              can.map(results, function(res) { return res.instance; })
+            ).trigger().done(function(){
+              can.map(can.makeArray(results), function(result) {
+                var new_result = self.make_result(result.instance, [result], binding);
+                new_result.compute = can.compute(function() {
+                  return self.filter_fn(result);
+                }).bind("change", $.proxy(self, "process_result", binding, result, new_result));
+                self.process_result(binding, result, new_result, new_result.compute());
+              });
             });
           });
       }
@@ -1029,7 +1037,7 @@
       }
 
     , is_valid_mapping: function(binding, mapping) {
-        var model = CMS.Models[this.model_name] || can.Model.Cacheable
+        var model = CMS.Models[this.model_name]
           , object_model = binding.instance.constructor
           , option_model = CMS.Models[this.option_model_name]
           ;
@@ -1318,7 +1326,7 @@
       }
 
     , is_valid_mapping: function(binding, mapping) {
-        var model = CMS.Models[this.model_name] || can.Model.Cacheable
+        var model = CMS.Models[this.model_name]
           , object_model = binding.instance.constructor
           ;
 

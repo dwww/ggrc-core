@@ -213,9 +213,12 @@ can.Component.extend({
                     this.scope.attributes.serialize())
         );
       }
-      join_object.save().done(function() {
-        el.trigger("modal:success", join_object);
-      });
+      this.bindXHRToButton(
+        join_object.save().done(function() {
+          el.trigger("modal:success", join_object);
+        }),
+        el
+        );
     },
     // this works like autocomplete_select on all modal forms and
     //  descendant class objects.

@@ -45,7 +45,7 @@ def login():
     flask_login.login_user(user)
     return redirect(get_next_url(request, default_url=url_for('dashboard')))
   else:
-    flash(u'That user account is disabled.', 'alert-error')
+    flash(u'That user account is disabled.', 'alert alert-error')
     return redirect('/')
   
 def logout():

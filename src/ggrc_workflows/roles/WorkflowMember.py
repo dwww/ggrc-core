@@ -32,6 +32,7 @@ permissions = {
     ],
     "update": [
         "WorkflowPerson",
+        "Cycle",
         "CycleTaskGroup",
         "CycleTaskGroupObject",
         "CycleTaskGroupObjectTask",

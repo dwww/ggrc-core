@@ -1,42 +1,14 @@
 {{! upload evidence to GDrive by clicking this button}}
 
-{{#if allow_mapping_or_creating}}
-{{#with_current_user_as "current_user"}}
 {{#if_helpers '\
-  #is_allowed' "create" 'ObjectDocument' _0_context=parent_instance.context.id '\
-    and ^if_equals' parent_instance.status 'Accepted' '\
+  #is_allowed' "create" 'ObjectDocument' _0_context=instance.context.id '\
+    and ^if_equals' instance.status 'Accepted' '\
   or #is_allowed' '__GGRC_ADMIN__' 'Audit' _2_context=null}}
-<li class="tree-footer tree-item tree-item-add">
-  <div class="row-fluid">
-    <div class="span12">
-      {{#using request=parent_instance.request}}
-      {{#with_mapping 'folders' request}}
-	      {{#if folders.0.instance.selfLink}}
-	      <a
-	        href="javascript://"
-	        data-placement="left"
-	        data-toggle="evidence-gdrive-picker"
-	        data-response-id="{{parent_instance.id}}"
-	        title="Upload Evidence"
-	        >
-	        Upload Evidence
-	      </a>
-	      {{else}}
-	        The Audit Lead must map a folder to Audit before Evidence can be uploaded.
-	      {{/if}}
-      {{else}}
-        {{#if error.errors}}
-          <small>
-            You need permission to access evidence folder. <a href="https://drive.google.com/folderview?id={{grdive_msg_to_id error.message}}&usp=sharing#">Request access.</a>
-          </small>
-        {{else}}
-          The Audit Lead must map a folder to Audit before Evidence can be uploaded.
-        {{/if}}
-      {{/with_mapping}}
-      {{/using}}
-    </div>
-  </div>
-</li>
+<div>
+<br>
+<ggrc-gdrive-picker-launcher instance="instance" deferred="true"></ggrc-gdrive-picker-launcher>
+<div>
 {{/if_helpers}}
-{{/with_current_user_as}}
-{{/if}}
+{{#is_allowed "create" 'ObjectDocument' context=instance.context.id}}
+  <ggrc-gdrive-folder-picker deferred="true" instance="instance"/>
+{{/is_allowed}}

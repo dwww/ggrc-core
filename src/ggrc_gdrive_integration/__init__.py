@@ -25,12 +25,14 @@ Audit.__bases__ = (Folderable,) + Audit.__bases__
 Audit.late_init_folderable()
 Request.__bases__ = (Folderable,) + Request.__bases__
 Request.late_init_folderable()
-# Response.__bases__ = (Fileable,) + Response.__bases__
-# Response.late_init_fileable()
+DocumentationResponse.__bases__ = (Folderable,) + DocumentationResponse.__bases__
+DocumentationResponse.late_init_folderable()
 DocumentationResponse.__bases__ = (Fileable,) + DocumentationResponse.__bases__
 DocumentationResponse.late_init_fileable()
 # InterviewResponse.__bases__ = (Fileable,) + InterviewResponse.__bases__
 # InterviewResponse.late_init_fileable()
+PopulationSampleResponse.__bases__ = (Folderable,) + PopulationSampleResponse.__bases__
+PopulationSampleResponse.late_init_folderable()
 PopulationSampleResponse.__bases__ = (Fileable,) + \
   PopulationSampleResponse.__bases__
 PopulationSampleResponse.late_init_fileable()

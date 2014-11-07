@@ -73,13 +73,17 @@ def create_task(name, url, queued_task=None, parameters={}):
   # schedule a task queue
   if getattr(settings, 'APP_ENGINE', False):
     from google.appengine.api import taskqueue
-    taskqueue = taskqueue.add(
+    if request.method == "POST":
+      headers = [h for h in request.headers if h[0] == 'Cookie']
+    else:
+      headers = request.headers
+    taskqueue.add(
         queue_name="ggrc",
         url=url,
         name=task.name,
         params={'task_id': task.id},
         method=request.method,
-        headers=request.headers)
+        headers=headers)
   elif queued_task:
     queued_task(task)
   return task
@@ -98,7 +102,7 @@ def queued_task(func):
     if len(args) > 0 and isinstance(args[0], BackgroundTask):
       task = args[0]
     else:
-      task = BackgroundTask.query.get(request.form.get("task_id"))
+      task = BackgroundTask.query.get(request.values.get("task_id"))
     task.start()
     try:
       result = func(task)

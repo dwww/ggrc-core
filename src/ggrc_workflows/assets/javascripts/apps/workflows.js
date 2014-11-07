@@ -139,7 +139,8 @@
         Cycle: {
           cycle_task_groups: Direct(
             "CycleTaskGroup", "cycle", "cycle_task_groups"),
-          reify_cycle_task_groups: Reify("cycle_task_groups")
+          reify_cycle_task_groups: Reify("cycle_task_groups"),
+          workflow: Direct("Workflow", "cycles", "workflow")
         },
 
         CycleTaskGroup: {
@@ -207,7 +208,10 @@
           cycle_task_group_object_task: Direct(
             "CycleTaskGroupObjectTask",
             "cycle_task_entries",
-            "cycle_task_group_object_task")
+            "cycle_task_group_object_task"),
+          workflow: Cross("cycle", "workflow"),
+          folders: Cross("workflow", "folders"),
+          extended_folders: Multi(["folders"])
         },
 
         People: {

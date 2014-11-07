@@ -4,7 +4,7 @@
 # Maintained By: dan@reciprocitylabs.com
 
 from .base import *
-from ggrc.models.all_models import SystemOrProcess, System, OrgGroup, Program, Relationship
+from ggrc.models.all_models import SystemOrProcess, System, OrgGroup, Program, Relationship, Vendor
 from ggrc.models.mixins import BusinessObject
 from .base_row import *
 from collections import OrderedDict
