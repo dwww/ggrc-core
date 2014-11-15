@@ -2574,4 +2574,47 @@ can.each({
   });
 });
 
+Mustache.registerHelper("validate", function(instance, property, options) {
+  instance = Mustache.resolve(instance);
+  property = Mustache.resolve(property);
+
+  options.context.attr("_suppressed", options.context._suppressed || {});
+  if(options.context.attr("_suppressed." + property) == null) {
+    options.context.attr("_suppressed." + property, true);
+  }
+
+  return function(el) {
+    can.view.live.attributes(el, can.compute(function() {
+      var errors = instance.computed_unsuppressed_errors();
+      instance.attr(property); //set up live binding on property
+      if(errors && errors[property]
+         && !options.context.attr("_suppressed." + property)
+         && !instance.attr("_suppress_errors")
+      ) {
+        can.each(options.hash, function(value, prop) {
+          if(prop === "class") {
+            $(el).addClass(value);
+          } else {
+            $(el).attr(prop, value);
+          }
+        });
+      } else {
+        can.each(options.hash, function(value, prop) {
+          if(prop === "class") {
+            $(el).removeClass(value);
+          } else {
+            $(el).removeAttr(prop);
+          }
+        });
+      }
+      return '';
+    }));
+    $(el).on("blur", function() {
+      options.context.attr("_suppressed." + property, false);
+
+    });
+  };
+});
+
+
 })(this, jQuery, can);

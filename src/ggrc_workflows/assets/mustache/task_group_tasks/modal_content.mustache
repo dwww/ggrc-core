@@ -13,7 +13,10 @@
         <span class="required">*</span>
         <i class="grcicon-help-black" rel="tooltip" title="Give new {{model.model_singular}} a summary that is easy to search for and indicates the main goals of this {{model.model_singular}}"></i>
       </label>
-      <input class="input-block-level required" id="task-title" placeholder="Enter Title" name="title" type="text" value="{{instance.title}}" tabindex="1" autofocus>
+      <div {{validate instance "title" class="field-failure"}}>
+        <input class="input-block-level required" id="task-title" placeholder="Enter Title" name="title" type="text" value="{{instance.title}}" {{validate instance "title" class="field-failure"}} tabindex="1" autofocus>
+        <label class="hide help-inline warning" {{validate instance "title" class="show"}}>{{#each instance.computed_unsuppressed_errors.title}}{{.}}{{/each}}</label>
+      </div>
       <br>
     </div>
     <div class="span4">
@@ -77,20 +80,21 @@
           Frequency: One time
           <i class="grcicon-help-black" rel="tooltip" title="Choose start and end dates"></i>
         </label>
-        <label class="smaller">
+        <label class="smaller" {{validate instance "start_date" class="field-failure"}}>
           <span class="start-text">
             Start Date
             <span class="required">*</span>
           </span>
-          <input tabindex="4" class="date input-small" name="start_date" data-toggle="datepicker" data-before="end_date" placeholder="MM/DD/YYYY" type="text" value="{{localize_date instance.start_date}}">
+          <input tabindex="4" class="date input-small" name="start_date" data-toggle="datepicker" data-before="end_date" placeholder="MM/DD/YYYY" type="text" {{validate instance "start_date" class="field-failure"}} value="{{localize_date instance.start_date}}">
         </label>
-        <label class="smaller">
+        <label class="smaller" {{validate instance "end_date" class="field-failure"}} >
           <span class="start-text">
             End Date
             <span class="required">*</span>
           </span>
-          <input tabindex="5" class="date input-small" name="end_date" data-toggle="datepicker" data-after="start_date" placeholder="MM/DD/YYYY" type="text" value="{{localize_date instance.end_date}}">
+          <input tabindex="5" class="date input-small" name="end_date" data-toggle="datepicker" data-after="start_date" placeholder="MM/DD/YYYY" type="text" {{validate instance "end_date" class="field-failure"}}  value="{{localize_date instance.end_date}}">
         </label>
+        <label class="hide help-inline warning" {{validate instance "start_date" class="show"}}>{{#each instance.computed_unsuppressed_errors.start_date}}{{.}}{{/each}}</label>
       </div>
       {{/case}}
       {{#case "weekly"}}
