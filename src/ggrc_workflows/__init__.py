@@ -485,7 +485,8 @@ def handle_cycle_task_group_put(
 
 def update_workflow_state(workflow):
   today = date.today()
-  min_start_date, max_end_date = calculate_min_start_date_and_max_end_date_for_workflow_from_basedate(workflow, today)
+  min_start_date, max_end_date = \
+      calculate_min_start_date_and_max_end_date_for_workflow_from_basedate(workflow, today)
   # Start the first cycle if min_start_date < today < max_end_date
   if workflow.recurrences :
     # Only create the cycle if we're mid-cycle
