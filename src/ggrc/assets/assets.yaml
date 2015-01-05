@@ -86,6 +86,7 @@ dashboard-js-files:
   - dashboard.js
   - jquery.iframe-transport.js
   - jquery.remotipart-patched.js
+  - webix.js
   #- d3.v2.js
   #- related_graph.js
 
@@ -264,6 +265,7 @@ dashboard-css-files:
   - dashboard.css
   - bootstrap-wysihtml5-0.0.2.css
   - jquery-ui.css
+  - webix.css
 
 dashboard-js-spec-files:
   - spec_setup.js

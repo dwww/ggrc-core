@@ -883,6 +883,14 @@ class Resource(ModelView):
 
       cache_op = 'Hit' if len(cache_objs) > 0 else 'Miss'
 
+    # Return custom fields specified via `__fields=id,title,description` etc.
+    # TODO this can be optimized by filter_resource() not retrieving the other fields to being with
+    if '__fields' in request.args:
+        custom_fields = request.args['__fields'].split(',')
+        objs = [
+            {f: o[f] for f in custom_fields if f in o}
+            for o in objs]
+
     with benchmark("Serialize collection"):
       collection = self.build_collection_representation(
           objs, extras=extras)

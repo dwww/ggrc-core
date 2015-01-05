@@ -341,3 +341,10 @@ def user_permissions():
      logged in user
   '''
   return get_permissions_json()
+
+@app.route("/webix")
+@login_required
+def webix():
+  """Showcase Webix components
+  """
+  return render_template("components/webix-page.html")
