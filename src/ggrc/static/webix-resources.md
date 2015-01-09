@@ -7,9 +7,11 @@ This file lists how to accomplish tasks with [Webix](http://webix.com).
 * [Documentation](http://docs.webix.com)
   * [Guides / tutorials](http://docs.webix.com/desktop__basic_tasks.html)
 * [Tons of samples for each component](http://docs.webix.com/samples/)
-* [Forum](http://forum.webix.com)
+* [Forum](http://forum.webix.com) and [dandv's questions](http://forum.webix.com/profile/discussions/9889/dandv)
+* [Snippet playground](http://webix.com/snippet) - a JSFiddle/JSBin/Plunkr for Webix
 * [GitHub](http://github.com/webix/tracker)
 
+Below are selected resources from the pages listed above.
 
 # [Styling](http://docs.webix.com/desktop__styling_and_animation.html)
 
@@ -55,17 +57,24 @@ This file lists how to accomplish tasks with [Webix](http://webix.com).
 
 * Custom checkbox and radio: http://docs.webix.com/samples/15_datatable/04_editing/08_custom_checkbox.html
 
+* Validation: http://docs.webix.com/samples/15_datatable/25_validation/index.html
+
+* Routes: http://docs.webix.com/samples/30_backbone/06_routes_webix.html
+
+* Refined binding between list and form within larger app: http://webix.com/demos/user.html
+
+* [Creating custom components](http://docs.webix.com/desktop__custom_component.html)
+
+## Datatable
+
+* Datatable columns: http://docs.webix.com/api__link__ui.treetable_columns_config.html
+
 * Datatable tooltips: http://docs.webix.com/samples/15_datatable/09_columns/08_tooltips.html
 
 * Datatable autosizing: http://docs.webix.com/samples/15_datatable/11_sizing/index.html
 
 * Datatable templates: http://docs.webix.com/samples/15_datatable/20_templates/index.html
 
-* Validation: http://docs.webix.com/samples/15_datatable/25_validation/index.html
-
-* Routes: http://docs.webix.com/samples/30_backbone/06_routes_webix.html
-
-* Refined binding between list and form within larger app: http://webix.com/demos/user.html
 
 
 # Data loading
@@ -83,4 +92,24 @@ This file lists how to accomplish tasks with [Webix](http://webix.com).
 webix.protoUI({
     name: 'edittreetable'
 }, webix.EditAbility, webix.ui.treetable);
+```
+
+```
+webix.protoUI({
+  name: 'progressTree'
+}, webix.ProgressBar, webix.ui.tree);
+```
+
+# Basic form
+
+```js
+{
+    view: 'form', id: relatedObjects + '-form', scroll: false,
+    elements:[
+        { view: 'text', name: 'title', label: 'Title' },
+        { view: 'textarea', name: 'description', label: 'Description' },
+        { view: 'button', value: 'Save', click: '$$("form1").save() }
+    ]
+
+}
 ```

@@ -1,3 +1,11 @@
+/*!
+    Copyright (C) 2015 Google Inc., authors, and contributors <see AUTHORS file>
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+    Created By: dandv@google.com
+    Maintained By: dandv@google.com
+*/
+
+
 /* TODO
  * counts - /search?q&counts_only=true&extra_columns=Workflow_All%3DWorkflow%2CWorkflow_Active%3DWorkflow%2CWorkflow_Draft%3DWorkflow%2CWorkflow_Inactive%3DWorkflow&extra_params=Workflow%3Astatus%3DActive%3BWorkflow_Active%3Astatus%3DActive%3BWorkflow_Inactive%3Astatus%3DInactive%3BWorkflow_Draft%3Astatus%3DDraft
      then match the results to the tree titles via Singular
@@ -17,30 +25,83 @@
 
  * my vs. all objects
  * server-side filter via Search
- * tree doesn't resize, nix the can.js resizer and replace with http://webix.com/snippet/87509036
+ * tree doesn't resize, nix the can.js resizer and replace with http://webix.com/snippet/87509036 or http://webix.com/snippet/3738411f
 
  */
 
 
+var objectTypes = [
+    'audits',
+    'controls' /* ignore program_controls, it's some metadata */,
+    'objectives' /* ignore object_objectives */,
+    'risk_assessments',
+    'task_groups' /* ignore task_group_objects for now */,
+
+    // these ones we moved to the root level above
+    'regulations',
+    'contracts',
+    'policies',
+    'standards'
+];
+
+/**
+ * Get/reify an object from the server.
+ * @param type - e.g. 'programs' or 'risk_assessments'. Must be an API plural name.
+ * @param id - database ID of the object
+ * @param [fields] - Limits the fields retrieved from the objects to those in this comma-separated list
+ * @returns {*} Promise. Use it as getObject('programs', '2935').then(function (data) { ... });
+ */
+function getObject(type, id, fields) {
+    return webix.ajax().header({
+        'Accept': 'application/json'
+    }).get('/api/' + type + '/' + id, {
+        // __fields: 'name,description,etc.'
+    })
+}
+
+/**
+ * Gets the objects of a given type that are related ("mapped") to the given object.
+ * @param object - the object for which we want to get the mapped objects. Must have a key for <type>
+ * @param type - e.g. 'programs' or 'risk_assessments'. Must be an API plural name.
+ * @param [fields] - Limits the fields retrieved from the objects to those in this comma-separated list. E.g. 'id,title,private' for the LHN tree.
+ * @returns {*} Promise. Use it as getRelatedObjects(object, type, fields).then(function (data) { ... });
+ */
+function getRelatedObjects(object, type, fields) {
+    if (type in object && object[type].length) {
+        var relatedIds = object[type].map(function (object) { return object.id; });
+
+        var parameters = {
+            id__in: relatedIds
+        };
+        if (fields) parameters.__fields = fields;
+
+        return webix.ajax().header({
+            'Accept': 'application/json'
+        }).get('/api/' + type, parameters);
+    }
+    // TODO return an empty promise instead
+    return [];
+}
+
+// load templates
+var objectDetailTemplate = webix.ajax().sync().get('/static/object-detail.html').responseText;
 
 var tree = {
     id: 'lhn-tree',
-    view: 'progressTree',
+    view: 'tree',
     position: 'flex',  // doesn't work - http://forum.webix.com/discussion/3641/bug-with-position-flex-doesn-t-resize-when-markup-container-size-changes
     template:"{common.icon()} {common.folder()} #title#",  // we might need to use a template function to show either the Title (for most objects), or the Name (for people) - http://docs.webix.com/desktop__html_templates.html#templatetypes
 
     // filterMode: {showSubItems: false },
 
-    /*
-    TODO set the icon type to spin while loading - see http://webix.com/snippet/ceb3ef4b
-    type:{
+    type: {
         icon: function getIconType(obj, common) {
             if (obj.open && obj.$count <= 0)
-                return '<div class="webix_tree_open fa-spinner fa-spin"></div>';
+                return '<div class="webix_tree_custom fa-spinner fa-spin"></div>';
 
-            return '<div class="webix_tree_' + (obj.open? '"open' : '"close') + '"></div>';
+            return '<div class="webix_tree_'+(obj.$count ? (obj.open?"open":"close") : "none")+'"></div>';
         }
-    },*/
+    },
 
     select: true,
     drag: true,
@@ -58,11 +119,9 @@ var tree = {
             if (node.webix_kids || !node.$parent) return;
             var parent = tree.getItem(node.$parent);
             var apiPlural = typePlural2ApiPlural(parent.title);
-            webix.ajax().header({
-                'Accept': 'application/json'
-            }).get('/api/' + apiPlural + '/' + node.id, {
-                // __fields: 'name,description,etc.'
-            }).then(setTabs);
+            getObject(apiPlural, node.id).then(setTabs).fail(function (err){
+                webix.message('Could not retrieve ' + apiPlural + ' ' + node.id);
+            });
         },
         onBeforeSelect: function (nodeId) {
             var objectTabs = $$('object-tabs');
@@ -74,6 +133,36 @@ var tree = {
     }
 };
 
+var treeTableColumns = [
+    {
+        id: 'title',
+        header: 'Name',
+        width: 400,
+        adjust: true,
+        template:"{common.treetable()} #title#"
+    },
+    {
+        id: 'description', header: 'Description',
+        adjust: true
+    },
+    {
+        id: 'slug', header: 'Code',
+        adjust: true
+    },
+    {
+        id: 'status', header: 'State',
+        adjust: true
+    },
+    {
+        id: 'updated_at', header: 'Last update',
+        adjust: true
+    },
+    { id: '', header: '', fillspace: 1,
+        template: '<span style="float: right"><i class="fa fa-calendar"></i> <input type=checkbox></span>',
+        css:"padding_less",
+        width:100
+    }
+];
 
 /**
  * Load the children of an LHN tree via the REST API
@@ -87,15 +176,15 @@ function loadTreeChildren(nodeId) {
     */
     var tree = this;
     var node = tree.getItem(nodeId);
-    tree.showProgress();
-    node.$count = 0;  // webix workaround - http://forum.webix.com/discussion/comment/3590/#Comment_3590
+    // if we wanted to show a big progress indicator - http://forum.webix.com/discussion/comment/3604/#Comment_3604
+    node.$count = 0;  // webix workaround that will be fixed in 2.2 - http://forum.webix.com/discussion/comment/3590/#Comment_3590
 
     var apiPlural = typePlural2ApiPlural(node.title),
         typeSingular = cms_singularize(node.title);  // not lowercase
 
-    // use promises for an easy to follow logical flow, without callbacks
+    // Use the search API because we have server-side filtering
     webix.ajax().get('search', {
-        q: '',
+        q: $$('tree-filter').getValue(),
         types: typeSingular  // the 's' in types refers to multiple type-s
     }).then(function (data) {
         var children = data.json().results.entries;
@@ -114,6 +203,7 @@ function loadTreeChildren(nodeId) {
     }).then(function (data) {
         // yes, the API is verbose like that: sections_collection.sections, as if 'sections' alone wasn't OK
         var children = data.json()[apiPlural + '_collection'][apiPlural];
+        // process the children and prepare the data for display in the LHN tree
         children.forEach(function (child) {
             child.webix_kids = false;
             if (child.private) child.$css = 'private';
@@ -126,22 +216,13 @@ function loadTreeChildren(nodeId) {
 }
 
 /**
- * Set the tabs according to data in the object
+ * Set the tabs for "mapped" objects according to data in the object selected in the LHN
  * @param data
  */
 function setTabs(data) {
     data = data.json();
     var type = Object.keys(data)[0];  // all object properties are under a key of the object type, e.g. 'program'
-    var object = data[type];
-
-    // move to the root lever the "directive"-type object (why are they under the "directive" key anyway?)
-    object.directives && object.directives.forEach(function (directive) {
-        // each has e.g. `href: "/api/policies/5938"`, `id: 5938`, `type: "Policy"`
-        var plural = typeSingular2apiPlural(directive.type);
-        plural in object? object[plural].push(directive) : object[plural] = [directive];
-    });
-
-    // TODO related_destinations
+    var object = normalizeObject(data[type]);
 
     var tabs = new webix.ui({
         container: 'object-detail-container',
@@ -173,35 +254,22 @@ function setTabs(data) {
     //$$('object-info').show();
     // TODO - force the active tab to show/render
 
-    [
-        'audits',
-        'controls' /* ignore program_controls, it's some metadata */,
-        'objectives' /* ignore object_objectives */,
-        'risk_assessments',
-        'task_groups' /* ignore task_group_objects for now */,
+    // get the related ("mapped") objects
+    objectTypes.forEach(function (relatedType) {
+        if (relatedType in object && object[relatedType].length) {
+            var tabId = relatedType + '-tab';
+            var relatedTypePlural = apiPlural2typePlural(relatedType);
 
-        // these ones we moved to the root level above
-        'regulations',
-        'contracts',
-        'policies',
-        'standards'
-    ].forEach(function (relatedObjects) {
-        if (relatedObjects in object && object[relatedObjects].length) {
-            var relatedIds = object[relatedObjects].map(function (object) { return object.id; });
-            var relatedTypePlural = apiPlural2typePlural(relatedObjects);
+            getRelatedObjects(object, relatedType).then(function (data) {
 
-            webix.ajax().header({
-                'Accept': 'application/json'
-            }).get('/api/' + relatedObjects, {
-                id__in: relatedIds
-                // __fields: 'name,description,etc.'
-            }).then(function (data) {
-                var tabId = relatedObjects + '-tabs';
-                tabIds.push(tabId);
+                var relatedObjects = normalizeObjects(data, relatedType);
+
+                var treeTableId = relatedType + '-treetable';
+                var objectDetailId = relatedType + '-details';
 
                 $$('object-tabs').addView({
                     id: tabId,
-                    header: '<span class="webix_icon ' + relatedObjects + '"></span> ' + relatedTypePlural + ' (' + object[relatedObjects].length + ')',
+                    header: '<span class="webix_icon ' + relatedType + '"></span> ' + relatedTypePlural + ' (' + object[relatedType].length + ')',
                     body: {
                         rows: [
                             {
@@ -210,14 +278,14 @@ function setTabs(data) {
                                         view: 'button',
                                         width: 200,
                                         value: 'Export to Excel', click: function () {
-                                        $$(relatedObjects + '-treetable').exportToExcel();
+                                        $$(relatedType + '-treetable').exportToExcel();
                                     }
                                     },
                                     {
                                         view: 'button',
                                         width: 200,
                                         value: 'Export to PDF', click: function () {
-                                        $$(relatedObjects + '-treetable').exportToPDF();
+                                        $$(relatedType + '-treetable').exportToPDF();
                                     }
                                     },
                                     {gravity: 2}
@@ -225,14 +293,14 @@ function setTabs(data) {
                             },
 
                             {
-                                id: relatedObjects + 'treetable-filter',
+                                id: relatedType + 'treetable-filter',
                                 view: 'text',
                                 label: 'Filter',
                                 labelPosition: 'inline'
                             },
                             {
                                 view: 'treetable',
-                                id: relatedObjects + '-treetable',
+                                id: treeTableId,
                                 position: 'flex',
 
                                 select: true,
@@ -240,84 +308,67 @@ function setTabs(data) {
                                 autoheight: true,
                                 resizeColumn: true,
 
-                                columns: [
-                                    {
-                                        id: 'title',
-                                        header: 'Name',
-                                        width: 400,
-                                        adjust: true,
-                                        template:"{common.treetable()} #title#"
-                                    },
-                                    {
-                                        id: 'description', header: 'Description',
-                                        adjust: true
-                                    },
-                                    {
-                                        id: 'slug', header: 'Code',
-                                        adjust: true
-                                    },
-                                    {
-                                        id: 'status', header: 'State',
-                                        adjust: true
-                                    },
-                                    {
-                                        id: 'updated_at', header: 'Last update',
-                                        adjust: true
-                                    },
-                                    { id: '', header: '', fillspace: 1,
-                                        template: '<span style="float: right"><i class="fa fa-calendar"></i> <input type=checkbox></span>',
-                                        css:"padding_less",
-                                        width:100
-                                    }
-                                ],
+                                columns: webix.copy(treeTableColumns),  // copy because the columns for each treetable are updated to reflect resizing
 
                                 // yes, the API is verbose like that: audits_collection.audits, as if 'audits' alone wasn't OK
-                                data: data.json()[relatedObjects + '_collection'][relatedObjects]
+                                data: relatedObjects,
+
+                                on: {
+                                    onAfterSelect: function (elementId) {
+                                        // hide the detail view if nothing is selected
+                                        if (elementId)
+                                            $$(objectDetailId).show();
+                                        else
+                                            $$(objectDetailId).hide();
+                                    },
+
+                                    // load objects linked ("mapped") to the current one under it
+                                    onDataRequest: function (elementId) {
+                                        var treetable = this;
+                                        var node = treetable.getItem(elementId);
+                                        node.$count = 0;  // Webix workaround until 2.2 TODO rm
+                                        var object = normalizeObject(treetable.getItem(elementId));
+                                        objectTypes.forEach(function (type) {
+                                            if (type in object && object[type].length)
+                                                getRelatedObjects(object, type).then(function (relatedObjects) {
+                                                    relatedObjects = normalizeObjects(relatedObjects, type);
+                                                    treetable.parse({parent: elementId, data: relatedObjects})
+                                                })
+                                        });
+                                        return false;
+                                    }
+
+                                }
 
                             },
-                            {   view:"resizer"  },
+                            { view: 'resizer' },
                             {
-                                cols: [
-                                    {
-                                        template: "<h2>Details</h2>#description#<p>Start date: #start_date#<p>End date: #end_date#",
-                                        id: relatedObjects + '-details',
-                                        height: 300,
-                                        on: {
-                                            onBindRequest: function () {
-                                                // http://forum.webix.com/discussion/3663/how-to-not-display-undefined-in-bound-templates-before-any-selection-is-made
-                                                // if (Object.keys(this.data).length === 0)  // weirdly, this is NOT an object? TODO SO
-                                                    // this.setContent("Sorry, there is no data");
-                                            }
-                                        }
-                                    },
-                                    {
-                                        view: 'form', id: relatedObjects + '-form', scroll:false,
-                                        elements:[
-                                            { view: 'text', name: 'title', label: 'Title' },
-                                            { view: 'textarea', name: 'description', label: 'Description' },
-                                            { view: 'button', value: 'Save' /*, click: '$$("form1").save()'*/ }
-                                        ]
-
+                                id: objectDetailId,
+                                hidden: true,  // will be shown only onAfterSelect from the treetable
+                                // TODO: return an HTML template, http://docs.webix.com/api__ui.template_sethtml.html
+                                // TODO big performance penalty; replace with objectDetailTemplate once forum.webix.com/discussion/comment/3667#Comment_3667 is solved
+                                template: 'http->/static/object-detail.html',
+                                autoheight: true,
+                                on: {
+                                    onBindRequest: function () {
+                                        // http://forum.webix.com/discussion/3663/how-to-not-display-undefined-in-bound-templates-before-any-selection-is-made
+                                        // if (Object.keys(this.data).length === 0)  // weirdly, this is NOT an object? TODO SO
+                                            // this.setContent("Sorry, there is no data");
                                     }
-                                ]
-
+                                }
                             }
                         ]
                     }
                 });
 
-                $$(relatedObjects + 'treetable-filter').attachEvent('onTimedKeyPress', function () {
-                    $$(relatedObjects + '-treetable').filter("#title#", this.getValue());
+                // enable filtering in the treetable
+                $$(relatedType + 'treetable-filter').attachEvent('onTimedKeyPress', function () {
+                    $$(treeTableId).filter("#title#", this.getValue());
                 });
 
+                // automatically show details for the currently selected object trom the treetable
+                $$(objectDetailId).bind(treeTableId);
 
-                $$(relatedObjects + '-details').bind(relatedObjects + '-treetable', function (data) {
-                    webix.message(data);
-                });
-
-                $$(relatedObjects + '-form').bind(relatedObjects + '-treetable', function (data) {
-                    webix.message(data);
-                });
 
             });
 
@@ -325,18 +376,9 @@ function setTabs(data) {
 
     });
 
-
-    /*people & object_people - excludes the task contact & modified_by - those are implicitly added to the People tab
-    program_directives & directives: regulations, contracts, policies, standards
-    related_destinations: systems, processes, data assets, products, projects, facilities, markets, org groups, vendors
-    workflow tasks is synthetically computed*/
 }
 
 
-
-webix.protoUI({
-  name: 'progressTree'
-}, webix.ProgressBar, webix.ui.tree);
 
 webix.ready(function () {
 

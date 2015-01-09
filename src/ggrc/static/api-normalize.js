@@ -68,3 +68,39 @@ function typeSingular2apiPlural(type) {
     return (type + 's').replace(/ys$/, 'ies').replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
     // TODO space/_
 }
+
+/**
+ * When they come from the API, objects have various related objects grouped under keys like `directives` or `related_destinations`.
+ * @param object
+ * @returns A sane object. E.g. a program will have a `regulations` key, not a `directives.regulations` key
+ */
+function normalizeObject(object) {
+    // move to the root level the "directive"-type object (why are they under the "directive" key anyway?)
+    object.directives && object.directives.forEach(function (directive) {
+        // regulations, contracts, policies, standards
+        // each has e.g. `href: "/api/policies/5938"`, `id: 5938`, `type: "Policy"`
+        var plural = typeSingular2apiPlural(directive.type);
+        plural in object? object[plural].push(directive) : object[plural] = [directive];
+    });
+
+    // TODO delete the original keys and traverse related_destinations
+    /*people & object_people - excludes the task contact & modified_by - those are implicitly added to the People tab
+     program_directives & directives: regulations, contracts, policies, standards
+     TODO: related_destinations: systems, processes, data assets, products, projects, facilities, markets, org groups, vendors
+     workflow tasks is synthetically computed*/
+
+    return object;
+}
+
+function normalizeObjects(data, type) {
+    // TODO - type is actually the only key, remove this dep
+    var relatedObjects = data.json()[type + '_collection'][type];
+
+    // calculate which objects have others related to them (probably all)
+    relatedObjects.forEach(function (object) {
+        // TODO object = normalizeObject(object);
+        // TODO actually check the sum of the lengths of the related objects arrays
+        object.webix_kids = true;
+    });
+    return relatedObjects;
+}
