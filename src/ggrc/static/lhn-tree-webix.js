@@ -5,12 +5,25 @@
     Maintained By: dandv@google.com
 */
 
+/**
+
+@author Dan Dascalescu, [@dandv](http://dandascalescu.com)
+@overview # GGRC front-end built with [Webix](http://webix.com)
+
+Webix was chosen as the UI components framework for GGRC after
+[extensive research](http://stackoverflow.com/questions/200284/what-are-alternatives-to-extjs/2144878#2144878).
+
+Runners-up include Dojo, lacking a modern theme (but @dandv started a [thread to get a Material Design
+theme](http://dojo-toolkit.33424.n3.nabble.com/Material-Design-inspired-theme-td4004856.html) done),
+and ExtJS, with a high learning curve.
+
+ */
 
 /* TODO
  * counts - /search?q&counts_only=true&extra_columns=Workflow_All%3DWorkflow%2CWorkflow_Active%3DWorkflow%2CWorkflow_Draft%3DWorkflow%2CWorkflow_Inactive%3DWorkflow&extra_params=Workflow%3Astatus%3DActive%3BWorkflow_Active%3Astatus%3DActive%3BWorkflow_Inactive%3Astatus%3DInactive%3BWorkflow_Draft%3Astatus%3DDraft
      then match the results to the tree titles via Singular
 
-    jQuery.ajax({
+    webix.ajax({
     url: 'search',
     data: {
         q: '',
@@ -23,91 +36,86 @@
     Add them as a field to the tree and set the node template
 
 
+ * LHN Workflow types + counts
+ * resizable Details
+ * working export
+ * relevant mappings
+ * real owners
  * my vs. all objects
+ * "private" icon
  * server-side filter via Search
+ * make RESTAPI return normalized objects already
  * tree doesn't resize, nix the can.js resizer and replace with http://webix.com/snippet/87509036 or http://webix.com/snippet/3738411f
+ * save data with http://docs.webix.com/api__link__ui.datatable_ondataupdate_event.html
 
  */
 
-
+/**
+ * @var objectTypes
+ */
 var objectTypes = [
+    // these types are direct keys of an object, e.g. var audits = getObject('programs', 123).audits;
     'audits',
     'controls' /* ignore program_controls, it's some metadata */,
     'objectives' /* ignore object_objectives */,
     'risk_assessments',
     'task_groups' /* ignore task_group_objects for now */,
 
-    // these ones we moved to the root level above
+    // these types were moved to root from under .directives by normalizeObject(object)
     'regulations',
     'contracts',
     'policies',
-    'standards'
+    'standards',
+    'programs',
+
+    // related_destinations, moved to root by normalizeObject(object)
+    'data_assets',
+    'facilities',
+    'markets',
+    'org_groups',
+    'processes',
+    'products',
+    'projects',
+    'systems',
+    'vendors'
 ];
 
-/**
- * Get/reify an object from the server.
- * @param type - e.g. 'programs' or 'risk_assessments'. Must be an API plural name.
- * @param id - database ID of the object
- * @param [fields] - Limits the fields retrieved from the objects to those in this comma-separated list
- * @returns {*} Promise. Use it as getObject('programs', '2935').then(function (data) { ... });
- */
-function getObject(type, id, fields) {
-    return webix.ajax().header({
-        'Accept': 'application/json'
-    }).get('/api/' + type + '/' + id, {
-        // __fields: 'name,description,etc.'
-    })
-}
-
-/**
- * Gets the objects of a given type that are related ("mapped") to the given object.
- * @param object - the object for which we want to get the mapped objects. Must have a key for <type>
- * @param type - e.g. 'programs' or 'risk_assessments'. Must be an API plural name.
- * @param [fields] - Limits the fields retrieved from the objects to those in this comma-separated list. E.g. 'id,title,private' for the LHN tree.
- * @returns {*} Promise. Use it as getRelatedObjects(object, type, fields).then(function (data) { ... });
- */
-function getRelatedObjects(object, type, fields) {
-    if (type in object && object[type].length) {
-        var relatedIds = object[type].map(function (object) { return object.id; });
-
-        var parameters = {
-            id__in: relatedIds
-        };
-        if (fields) parameters.__fields = fields;
-
-        return webix.ajax().header({
-            'Accept': 'application/json'
-        }).get('/api/' + type, parameters);
-    }
-    // TODO return an empty promise instead
-    return [];
-}
-
 // load templates
+// XXX With Webix < 2.2, HTML must NOT contain comments - http://forum.webix.com/discussion/comment/3667#Comment_3667
 var objectDetailTemplate = webix.ajax().sync().get('/static/object-detail.html').responseText;
 
+
+
+/**
+ * Define the Webix properties of the LHN tree
+ * @var
+ * @type {{id: string, view: string, position: string, template: string, type: {icon: Function}, select: boolean, drag: boolean, data: (lhn_data|*), on: {onDataRequest: loadTreeChildren, onAfterSelect: Function, onBeforeSelect: Function}}}
+ */
 var tree = {
     id: 'lhn-tree',
     view: 'tree',
     position: 'flex',  // doesn't work - http://forum.webix.com/discussion/3641/bug-with-position-flex-doesn-t-resize-when-markup-container-size-changes
-    template:"{common.icon()} {common.folder()} #title#",  // we might need to use a template function to show either the Title (for most objects), or the Name (for people) - http://docs.webix.com/desktop__html_templates.html#templatetypes
+    template: '{common.icon()} {common.folder()} #title#',  // we might need to use a template function to show either the Title (for most objects), or the Name (for people) - http://docs.webix.com/desktop__html_templates.html#templatetypes
 
     // filterMode: {showSubItems: false },
 
     type: {
+        // the expand/collapse icon, by default +/-
         icon: function getIconType(obj, common) {
+            // if we're loading the children
             if (obj.open && obj.$count <= 0)
                 return '<div class="webix_tree_custom fa-spinner fa-spin"></div>';
-
-            return '<div class="webix_tree_'+(obj.$count ? (obj.open?"open":"close") : "none")+'"></div>';
+            // if the children have been loaded, display open/close or no expand/collapse icon if there are no children
+            return '<div class="webix_tree_'+(obj.$count ? (obj.open? 'open' : 'close') : 'none')+'"></div>';
+            // TODO might be able to simplify ^^ by NOT creating "webix_tree_programs" icons, but targeting .webix_tree .programs
         }
     },
 
     select: true,
     drag: true,
     // editable: http://docs.webix.com/datatree__editing.html#comment-1759430743
-    editor: 'text',
-    editValue: 'value',
+    // editor: 'text',
+    // editValue: 'value',
 
     data: lhn_data,
     on: {
@@ -116,57 +124,144 @@ var tree = {
             // get the object and create its tabs
             var tree = this;
             var node = tree.getItem(nodeId);
-            if (node.webix_kids || !node.$parent) return;
+            if (node.webix_kids || !node.$parent) return;  // do nothing for the grouping nodes like "Governance"
             var parent = tree.getItem(node.$parent);
-            var apiPlural = typePlural2ApiPlural(parent.title);
-            getObject(apiPlural, node.id).then(setTabs).fail(function (err){
+            var apiPlural = RESTAPI.typePlural2ApiPlural(parent.title);
+            RESTAPI.getObject(apiPlural, node.id).then(setTabs).fail(function (err){
                 webix.message('Could not retrieve ' + apiPlural + ' ' + node.id);
             });
         },
         onBeforeSelect: function (nodeId) {
             var objectTabs = $$('object-tabs');
-            objectTabs && objectTabs.destructor();
-            /*tabIds.forEach(function (id) {
-                $$('object-tabs').removeView(id);
-            });*/
+            objectTabs && objectTabs.destructor();  // TODO alternatively, remove all tabviews one by one: http://docs.webix.com/api__link__ui.tabview_removeview.html#comment-1784100647
         }
     }
 };
 
+
+/**
+ * Define the [TreeTable columns](http://docs.webix.com/api__link__ui.treetable_columns_config.html)
+ * @var
+ */
 var treeTableColumns = [
     {
-        id: 'title',
-        header: 'Name',
-        width: 400,
+        id: 'title',  // `id is the key in each object that supplies the value for this column
+        header: 'Name',  // the name of the Webix treetable column
+        sort: 'string',
+        minWidth: 200,
+        fillspace: true,
         adjust: true,
-        template:"{common.treetable()} #title#"
+        template: '{common.treetable()} #title#',  // include the expand/collapse button and the icon
+        // to include checkbox: template:"{common.space()}{common.icon()}{common.treecheckbox()}{common.folder()}#value#"; and add 'threeState: true,' to the treetable definition
+        exportAsTree: true  // false -> export as flat column
+        // TODO bug - missing column separator before the next column
     },
     {
-        id: 'description', header: 'Description',
+        id: 'owner', header: 'Owner',
+        sort: 'string',
         adjust: true
     },
     {
         id: 'slug', header: 'Code',
+        // header: ['Code', {content: 'textFilter'}],
+        sort: 'string',
+        css: {'text-align' : 'right'},  // inline style
         adjust: true
     },
     {
-        id: 'status', header: 'State',
+        id: 'status',
+        header: [  // two-row header
+        //    'State',
+            { content: 'selectFilter' }  // predefined column content type that builds a drop-down of the values in the column
+        ],
+        sort: 'string',
         adjust: true
     },
     {
         id: 'updated_at', header: 'Last update',
+        sort: 'date',
         adjust: true
     },
-    { id: '', header: '', fillspace: 1,
+    {
+        id: 'buttons', header: '<span style="float: right"><i class="fa fa-eye"></i> <i class="fa fa-gear"></i></span>',
         template: '<span style="float: right"><i class="fa fa-calendar"></i> <input type=checkbox></span>',
-        css:"padding_less",
-        width:100
+        css: 'padding_less',  // CSS class
+        width: 100
     }
 ];
 
+
 /**
- * Load the children of an LHN tree via the REST API
- * @param nodeId
+ * Returns a [TreeTable](http://docs.webix.com/api__refs__ui.datatable.html) configuration object for Webix
+ * @param {string} id - desired id for the table
+ * @param {object[]} data
+ * @param {string} detailPaneId - the id of a slave view that shows details about the currently select
+ * @returns {{view: string, id: *, position: string, type: {icon: Function}, select: string, multiselect: boolean, editable: boolean, autoheight: boolean, resizeColumn: boolean, columns: *, leftSplit: number, data: *, on: {onAfterSelect: Function, onAfterFilter: Function, onDataRequest: loadTreeTableChildren, onAfterLoad: Function}}}
+ */
+function treeTableConfig(id, data, detailPaneId) {
+    return {
+        view: 'treetable',
+        id: id,
+        position: 'flex',  // TODO test after Webix 2.2
+
+        type: {
+            // the expand/collapse icon, by default +/-
+            icon: function getTreeTableIconType(obj, common) {
+                // if we're loading the children
+                if (obj.open && obj.$count === -1)
+                    return '<div class="webix_tree_custom fa-spinner fa-spin"></div>';
+                // if the children have been loaded, display open/close or no expand/collapse icon if there are no children
+                return '<div class="webix_tree_'+(obj.$count ? (obj.open? 'open' : 'close') : 'none')+'"></div>';
+            }
+        },
+
+        select: 'row',
+        multiselect: true,
+
+        editable: false,
+
+        autoheight: true,
+        resizeColumn: true,
+
+        columns: webix.copy(treeTableColumns),  // copy because the columns for each treetable are updated to reflect resizing
+        leftSplit: 1,  // freeze the first column
+
+        // yes, the API is verbose like that: audits_collection.audits, as if 'audits' alone wasn't OK
+        data: data,
+
+        on: {
+            onAfterSelect: function (data, preserved) {
+                // show the detail view when a row is selected
+                $$(detailPaneId).show();
+            },
+            onAfterFilter: function (data, preserved) {
+                // hide the detail view after filtering, due to a Webix bug - http://forum.webix.com/discussion/comment/3693/#Comment_3693 TODO
+                $$(detailPaneId).hide();
+            },
+
+            // load objects linked ("mapped") to the current one under it
+            onDataRequest: loadTreeTableChildren,
+
+            // adjust column widths after loading new data - http://forum.webix.com/discussion/comment/3582/#Comment_3582
+            onAfterLoad: function () {
+                var treetable = this;
+                /*treetable.eachColumn(function (columnId) {
+                    // TODO rm when fix for keep an eye on http://forum.webix.com/discussion/3694/treetable-datatable-adjustcolumn-only-adjusts-after-all-rows-have-been-loaded
+                    if (!treetable.getColumnConfig(columnId).fillspace)
+                        treetable.adjustColumn(columnId, 'all');  // don't ajust the last column because it has fillspace = 1
+                });*/
+                // treetable.adjustColumn('title', 'data'); - we have fillspace: true for the title
+                // TODO sort by the current sort column
+            }
+        }
+    }
+}
+
+
+
+/**
+ * Load the children of an LHN tree via the REST API. Used as the onDataRequest by the tree.
+ * @param {String} nodeId - The id of the node whole children should be loaded
  */
 function loadTreeChildren(nodeId) {
     /* TODO paging: http://docs.webix.com/desktop__scroll_control.html#scrollinganddynamicloading
@@ -177,12 +272,12 @@ function loadTreeChildren(nodeId) {
     var tree = this;
     var node = tree.getItem(nodeId);
     // if we wanted to show a big progress indicator - http://forum.webix.com/discussion/comment/3604/#Comment_3604
-    node.$count = 0;  // webix workaround that will be fixed in 2.2 - http://forum.webix.com/discussion/comment/3590/#Comment_3590
+    node.$count = 0;  // webix workaround to avoid loading twice. Will be fixed in 2.2 - http://forum.webix.com/discussion/comment/3590/#Comment_3590 TODO rm
 
-    var apiPlural = typePlural2ApiPlural(node.title),
-        typeSingular = cms_singularize(node.title);  // not lowercase
+    var apiPlural = RESTAPI.typePlural2ApiPlural(node.title),
+        typeSingular = RESTAPI.typePlural2Singular(node.title);  // not lowercase
 
-    // Use the search API because we have server-side filtering
+    // Use the search API because we have server-side filtering; can't use the /apiPlural endpoint
     webix.ajax().get('search', {
         q: $$('tree-filter').getValue(),
         types: typeSingular  // the 's' in types refers to multiple type-s
@@ -198,10 +293,11 @@ function loadTreeChildren(nodeId) {
             'Accept': 'application/json'
         }).get('/api/' + apiPlural, {
             id__in: childrenIds.slice(0, 300).join(','),  // the request for all ids may be too big; 459 sections was too big, 254 worked. IDs were 40digit.
-            __fields: 'id,title,name,private'  // name is only for people
+            __fields: 'id,title,name,private'  // 'name' is only for people; all other objects have 'title'
         });
     }).then(function (data) {
         // yes, the API is verbose like that: sections_collection.sections, as if 'sections' alone wasn't OK
+        // TODO call normalize instead
         var children = data.json()[apiPlural + '_collection'][apiPlural];
         // process the children and prepare the data for display in the LHN tree
         children.forEach(function (child) {
@@ -216,38 +312,75 @@ function loadTreeChildren(nodeId) {
 }
 
 /**
+ * Load objects linked ("mapped") to the current one under it. Used as onDataRequest by the treetable.
+ * @param {String} elementId - The id of the node whose children should be loaded
+ */
+function loadTreeTableChildren(elementId) {
+    var treetable = this;
+    var object = treetable.getItem(elementId);
+    RESTAPI.normalizeObject(object);  // TODO this should arrive here normalized
+    // get all the parents of these objects, so we can remove them from relatedObjects because we don't want cycles in the tree
+    var visitor = object, parents = {};
+    do parents[visitor.id] = true; while (visitor = treetable.getItem(visitor.$parent));
+    // check for related objects of any type: audits, controls, ..., vendors
+    objectTypes.forEach(function (type) {
+        RESTAPI.getRelatedObjects(object, type).then(function (data) {
+            var relatedObjects = RESTAPI.normalizeObjects(data.json());
+            var relatedChildren = [];  // grep/filter
+            relatedObjects.forEach(function (child) {
+                if (!parents[child.id])
+                    relatedChildren.push(child);
+            });
+            if (relatedChildren.length)  // TODO Webix bug: http://forum.webix.com/discussion/3696/treetable-nodes-render-blank-ondatarequest
+                treetable.parse({parent: elementId, data: relatedChildren});
+            else console.log('Zero children left for', type);
+            // TODO bug: for some objects the - stays - after expansion to no children; for others, it disappears. Check in dandv -> Controls -> area recon
+        })
+    });
+    object.$count = 0;  // Webix workaround to avoid loading twice. Will be fixed in 2.2 - http://forum.webix.com/discussion/comment/3590/#Comment_3590
+    // TODO apparently not necessary for treetable on localost but did this happen on AppEngine, so setting it as insurance
+    return false;
+}
+/**
  * Set the tabs for "mapped" objects according to data in the object selected in the LHN
  * @param data
  */
 function setTabs(data) {
     data = data.json();
     var type = Object.keys(data)[0];  // all object properties are under a key of the object type, e.g. 'program'
-    var object = normalizeObject(data[type]);
+    var object = RESTAPI.normalizeObject(data[type]);
 
     var tabs = new webix.ui({
         container: 'object-detail-container',
         position: 'flex',
-        view: 'tabview',
-        id: 'object-tabs',
-        tabbar: {
-            tabMinWidth: 180,
-            optionWidth: 200,
-            close: true
-        },
-        animate: true,
-        cells: [
+        rows: [
             {
-                header: '<span class="webix_icon fa-info"></span> Info',
-                body: {
-                    // view: 'list',
-                    id: 'object-info',
-                    position: 'flex',
-                    template: 'Information about this #type#: #title#',
-                    data: object
-                }
+                view: 'template', type: 'header', template: '#title#', data: object
+            },
+            {
+                view: 'tabview',  // http://docs.webix.com/api__refs__ui.tabview.html
+                id: 'object-tabs',
+                tabbar: {
+                    tabMinWidth: 180,
+                    optionWidth: 200,
+                    close: true
+                },
+                animate: true,
+                cells: [
+                    {
+                        // header: '<span class="webix_icon fa-info"></span> Info',
+                        header: '<span class="webix_icon info"></span> Info',
+                        body: {
+                            // view: 'list',
+                            id: 'object-info',
+                            position: 'flex',
+                            template: 'Information about this #type#: #title#',
+                            data: object
+                        }
+                    }
+                ]
             }
         ]
-
     });
 
     //$$('object-info').parse(object);
@@ -258,18 +391,20 @@ function setTabs(data) {
     objectTypes.forEach(function (relatedType) {
         if (relatedType in object && object[relatedType].length) {
             var tabId = relatedType + '-tab';
-            var relatedTypePlural = apiPlural2typePlural(relatedType);
 
-            getRelatedObjects(object, relatedType).then(function (data) {
+            RESTAPI.getRelatedObjects(object, relatedType).then(function gotRelatedObjects(data) {
 
-                var relatedObjects = normalizeObjects(data, relatedType);
+                var relatedObjects = RESTAPI.normalizeObjects(data.json());
 
                 var treeTableId = relatedType + '-treetable';
                 var objectDetailId = relatedType + '-details';
+                var relatedTypeUserFriendly = RESTAPI.apiPlural2typePlural(relatedType);
 
+                // TODO: ensure consistent order by creating all the tabs but keeping them hidden, then showing when data arrives
+                // TODO also don't destruct, but replace the contents... faster but more memory-leak prone?
                 $$('object-tabs').addView({
                     id: tabId,
-                    header: '<span class="webix_icon ' + relatedType + '"></span> ' + relatedTypePlural + ' (' + object[relatedType].length + ')',
+                    header: '<span class="webix_icon ' + relatedType + '"></span> ' + relatedTypeUserFriendly + ' (' + object[relatedType].length + ')',
                     body: {
                         rows: [
                             {
@@ -278,17 +413,17 @@ function setTabs(data) {
                                         view: 'button',
                                         width: 200,
                                         value: 'Export to Excel', click: function () {
-                                        $$(relatedType + '-treetable').exportToExcel();
-                                    }
+                                            $$(relatedType + '-treetable').exportToExcel();
+                                        }
                                     },
                                     {
                                         view: 'button',
                                         width: 200,
                                         value: 'Export to PDF', click: function () {
-                                        $$(relatedType + '-treetable').exportToPDF();
-                                    }
+                                            $$(relatedType + '-treetable').exportToPDF();
+                                        }
                                     },
-                                    {gravity: 2}
+                                    { gravity: 2 }  // sizing
                                 ]
                             },
 
@@ -298,57 +433,13 @@ function setTabs(data) {
                                 label: 'Filter',
                                 labelPosition: 'inline'
                             },
-                            {
-                                view: 'treetable',
-                                id: treeTableId,
-                                position: 'flex',
-
-                                select: true,
-
-                                autoheight: true,
-                                resizeColumn: true,
-
-                                columns: webix.copy(treeTableColumns),  // copy because the columns for each treetable are updated to reflect resizing
-
-                                // yes, the API is verbose like that: audits_collection.audits, as if 'audits' alone wasn't OK
-                                data: relatedObjects,
-
-                                on: {
-                                    onAfterSelect: function (elementId) {
-                                        // hide the detail view if nothing is selected
-                                        if (elementId)
-                                            $$(objectDetailId).show();
-                                        else
-                                            $$(objectDetailId).hide();
-                                    },
-
-                                    // load objects linked ("mapped") to the current one under it
-                                    onDataRequest: function (elementId) {
-                                        var treetable = this;
-                                        var node = treetable.getItem(elementId);
-                                        node.$count = 0;  // Webix workaround until 2.2 TODO rm
-                                        var object = normalizeObject(treetable.getItem(elementId));
-                                        objectTypes.forEach(function (type) {
-                                            if (type in object && object[type].length)
-                                                getRelatedObjects(object, type).then(function (relatedObjects) {
-                                                    relatedObjects = normalizeObjects(relatedObjects, type);
-                                                    treetable.parse({parent: elementId, data: relatedObjects})
-                                                })
-                                        });
-                                        return false;
-                                    }
-
-                                }
-
-                            },
+                            treeTableConfig(treeTableId, relatedObjects, objectDetailId),
                             { view: 'resizer' },
                             {
                                 id: objectDetailId,
                                 hidden: true,  // will be shown only onAfterSelect from the treetable
-                                // TODO: return an HTML template, http://docs.webix.com/api__ui.template_sethtml.html
-                                // TODO big performance penalty; replace with objectDetailTemplate once forum.webix.com/discussion/comment/3667#Comment_3667 is solved
-                                template: 'http->/static/object-detail.html',
-                                autoheight: true,
+                                template: objectDetailTemplate,
+                                // autoheight: true,
                                 on: {
                                     onBindRequest: function () {
                                         // http://forum.webix.com/discussion/3663/how-to-not-display-undefined-in-bound-templates-before-any-selection-is-made
@@ -360,6 +451,11 @@ function setTabs(data) {
                         ]
                     }
                 });
+
+                // establish initial sorting
+                var treeTable = $$(treeTableId);
+                treeTable.sort("#title#");
+                treeTable.markSorting("title", "asc");
 
                 // enable filtering in the treetable
                 $$(relatedType + 'treetable-filter').attachEvent('onTimedKeyPress', function () {
@@ -392,9 +488,8 @@ webix.ready(function () {
         rows: [
             {
                 id: 'tree-filter',
-                view: 'text',
-                label: 'Search',
-                labelPosition: 'inline'
+                view: 'search',
+                placeholder: 'Filter my objects...'
             },
             tree
         ]

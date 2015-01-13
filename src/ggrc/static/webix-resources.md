@@ -31,6 +31,8 @@ Below are selected resources from the pages listed above.
 
 # [Components](http://docs.webix.com/desktop__components.html)
 
+* [Layouts, saving to the server](http://docs.webix.com/desktop__dynamic_layout.html)
+
 * Context menu: http://docs.webix.com/samples/03_menu/04_context.html
 
 * List advanced template: http://docs.webix.com/samples/05_list/17_advanced_template.html
@@ -65,23 +67,42 @@ Below are selected resources from the pages listed above.
 
 * [Creating custom components](http://docs.webix.com/desktop__custom_component.html)
 
+## Templates
+
+* [Templates](http://docs.webix.com/desktop__html_templates.html) for every component. They only substitute #<key>#.
+
+* Item [types](http://docs.webix.com/desktop__type.html) define display properties common across all items in a component.
+  You can [include the result of arbitrary functions in each template](http://docs.webix.com/desktop__type.html).
+
 ## Datatable
 
 * Datatable columns: http://docs.webix.com/api__link__ui.treetable_columns_config.html
 
 * Datatable tooltips: http://docs.webix.com/samples/15_datatable/09_columns/08_tooltips.html
 
-* Datatable autosizing: http://docs.webix.com/samples/15_datatable/11_sizing/index.html
+* [Datatable sizing](http://docs.webix.com/datatable__sizing.html) and [autosizing sample](http://docs.webix.com/samples/15_datatable/11_sizing/index.html)
 
 * Datatable templates: http://docs.webix.com/samples/15_datatable/20_templates/index.html
 
+* [Colummns configuration](http://docs.webix.com/datatable__columns_configuration.html) and how to attach a column with an external data source
+
+* [Treetable filtering](http://docs.webix.com/samples/15_datatable/30_treetable/04_filter.html)
 
 
-# Data loading
+## Trees
+
+* [Node templates](http://docs.webix.com/datatree__node_templates.html) in trees or treetables: common.icon()/folder()/checkbox()
+
+
+# [Data loading](http://docs.webix.com/desktop__data_loading.html)
+
+* [DataStore updated event](http://docs.webix.com/api__datastore_onstoreupdated_event.html) can be used to refresh components after the underlying data has changed
 
 * Dynamic loading through data proxy: http://docs.webix.com/samples/15_datatable/16_dyn_loading/07_dyn_proxy.html
 
 * Data binding: http://docs.webix.com/api__link__ui.template_bind.html
+
+* [Server-side integration](http://docs.webix.com/desktop__serverside.html
 
 * [mapping the JSON response fields](http://docs.webix.com/helpers__data_drivers.html#customizingdatadriver for )
 

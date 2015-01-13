@@ -1,29 +1,42 @@
-#lhn-tree-container .governance {
-    color: #2196f3;
-}
-#lhn-tree-container .governance + div {
-    color: #2196f3;
-    font-size: 12px;
+body .webix_view {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+.webix_tree_leaves {
+    font-size: 12px;
+    text-transform: none;
+    font-weight: normal;
+}
+
+.webix_tree_branch_1 {
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+#lhn-tree-container .governance {
+    color: #2196f3;
+    & + div {
+        color: #2196f3;  // same color for leaves
+    }
+}
 #lhn-tree-container .entities {
     color: #795548;
-}
-#lhn-tree-container .entities + div {
-    color: #795548;
-    font-size: 12px;
+    & + div {
+        color: #795548;;  // same color for leaves
+    }
 }
 
 #lhn-tree-container .business {
     color: #4caf50;
-}
-#lhn-tree-container .business + div {
-    color: #4caf50;
-    font-size: 12px;
+    & + div {
+        color: #4caf50;  // same color for leaves
+    }
 }
 
 #lhn-tree-container .webix_selected {
-    background-color: lightskyblue;
+    background-color: #eeeeee;
+    color: inherit;
 }
 
 /* TODO broken */
@@ -31,10 +44,6 @@
     .grc-icon;
     background-position: -6px -272px;
     float: right;
-}
-
-.webix_tree {
-    font-size: 16px;
 }
 
 /* Custom tree icons: http://docs.webix.com/samples/17_datatree/03_styles/05_custom_icons.html
@@ -46,29 +55,41 @@
     display: inline-block;
     width: 20px;
     height: 18px;
-    margin-top: 4px;
+    margin-top: 8px;
 }
 
-#lhn-tree-container .webix_tree_open:before {
+/* Redefine the tree node expand/collapse (open/close) buttons. The :before selectors hide the Webix icon. .webix_view is needed to match Webix's specificity */
+.webix_view .webix_tree_open:before {
     content: '';
 }
 
-#lhn-tree-container .webix_tree_open {
+.webix_view .webix_tree_open {
     .grc-icon;
     background-position: -102px -80px, center;
 }
 
-#lhn-tree-container .webix_tree_close:before {
+.webix_view .webix_tree_close:before {
     content: '';
 }
 
-#lhn-tree-container .webix_tree_close {
+.webix_view .webix_tree_close {
     .grc-icon;
     background-position: -102px -56px, center;
     opacity: 0.25;
 }
 
-.webix_tree_custom{
+// The LHN icons need margin-top: 4px, while the TreeTable tree needs margin-top: 8px
+#lhn-tree-container .webix_view {
+    .webix_tree_open, .webix_tree_close, .webix_tree_programs, .webix_tree_workflows, .webix_tree_audits  {
+        margin-top: 4px;
+    }
+}
+
+#lhn-tree-container .webix_view .webix_tree_none {
+    width: 0;
+}
+
+.webix_tree_custom {
     font-family: FontAwesome;
     font-size: 14px;
     text-align: center;
@@ -81,95 +102,116 @@
 }
 
 /* CSS class names have adopted the apiPlural names because those are less likely to change */
-#lhn-tree-container .webix_tree_audits, .webix_icon.audits {
+span.webix_icon.info {
+    .grc-icon;
+    padding: 0;  /* override some bleed from dashboard.css */
+    background-position: -126px -176px;
+}
+
+.webix_tree_audits, .webix_icon.audits {
     .grc-icon;
     background-position: -270px -8px;
 }
 
-#lhn-tree-container .webix_tree_contracts, .webix_icon.contracts {
+.webix_tree_contracts, .webix_icon.contracts {
     .grc-icon;
     background-position: -126px -104px;
 }
 
-#lhn-tree-container .webix_tree_controls, .webix_icon.controls {
+.webix_tree_controls, .webix_icon.controls {
     .grc-icon;
     background-position: -150px -224px;
 }
 
-#lhn-tree-container .webix_tree_facilities, .webix_icon.facilities {
+.webix_tree_data_assets, .webix_icon.data_assets {
+    .grc-icon;
+    background-position: -174px -224px;
+}
+
+.webix_tree_facilities, .webix_icon.facilities {
     .grc-icon;
     background-position: -222px -104px;
 }
 
-#lhn-tree-container .webix_tree_markets, .webix_icon.markets {
+.webix_tree_markets, .webix_icon.markets {
     .grc-icon;
     background-position: -246px -104px;
 }
 
-#lhn-tree-container .webix_tree_objectives, .webix_icon.objectives {
+.webix_tree_objectives, .webix_icon.objectives {
     .grc-icon;
     background-position: -150px -56px;
 }
 
-#lhn-tree-container .webix_tree_org_groups, .webix_icon.org_groups {
+.webix_tree_org_groups, .webix_icon.org_groups {
     .grc-icon;
     background-position: -78px -224px;
 }
 
-#lhn-tree-container .webix_tree_policies, .webix_icon.policies {
+.webix_tree_policies, .webix_icon.policies {
     .grc-icon;
     background-position: -150px -104px;
 }
 
-#lhn-tree-container .webix_tree_programs, .webix_icon.programs {
+.webix_tree_processes, .webix_icon.processes {
+    .grc-icon;
+    background-position: -102px -224px;
+}
+
+.webix_tree_products, .webix_icon.products {
+    .grc-icon;
+    background-position: -270px -104px;
+}
+
+.webix_tree_programs, .webix_icon.programs {
     .grc-icon;
     background-position: -6px -296px;
 }
 
-#lhn-tree-container .webix_tree_regulations, .webix_icon.regulations {
+.webix_tree_projects, .webix_icon.projects {
+    .grc-icon;
+    background-position: -54px -224px;
+}
+
+.webix_tree_regulations, .webix_icon.regulations {
     .grc-icon;
     background-position: -174px -104px;
 }
 
-#lhn-tree-container .webix_tree_standards, .webix_icon.standards {
+.webix_tree_standards, .webix_icon.standards {
     .grc-icon;
     background-position: -198px -368px;
 }
 
-#lhn-tree-container .webix_tree_risk_assessments, .webix_icon.risk_assessments {
+.webix_tree_risk_assessments, .webix_icon.risk_assessments {
     .grc-icon;
     background-position: -198px -224px;
 }
 
-#lhn-tree-container .webix_tree_sections, .webix_icon.sections {
+.webix_tree_sections, .webix_icon.sections {
     .grc-icon;
     background-position: -198px -104px;
 }
 
-#lhn-tree-container .webix_tree_systems, .webix_icon.systems {
+.webix_tree_systems, .webix_icon.systems {
     .grc-icon;
     background-position: -126px -224px;
 }
 
-#lhn-tree-container .webix_tree_task_groups, .webix_icon.task_groups {
+.webix_tree_task_groups, .webix_icon.task_groups {
     .grc-icon;
     background-position: -318px -56px;
 }
 
-#lhn-tree-container .webix_tree_vendors, .webix_icon.vendors {
+.webix_tree_vendors, .webix_icon.vendors {
     .grc-icon;
-    background-position: -78px -224px;
+    background-position: -30px -392px;
 }
 
-#lhn-tree-container .webix_tree_workflows, .webix_icon.workflows {
+.webix_tree_workflows, .webix_icon.workflows {
     .grc-icon;
     background-position: -294px -296px;
 }
-
-#lhn-tree-container label.webix_inp_label {
-    text-align: center !important;
-}
-
 
 /*.webix_tree_home{
     background-image: url(/static/icons.png);
