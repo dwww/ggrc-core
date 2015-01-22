@@ -194,9 +194,22 @@ def handle_cycle_post(sender, obj=None, src=None, service=None):
     build_cycle(obj, current_user=current_user)
     # calculate next_cycle_start_date
     workflow = obj.workflow
+    calculator = WorkflowDateCalculator(workflow)
+    from datetime import timedelta
+    '''
+    The check for next_cycle_start_date==today looks valid.
+    However, the current next_cycle_start_date was adjusted for holidays and weekends.
+    Because of that, we can't just use WorkflowDateCalculator.next_cycle_start_date_after_start_date
+    because that method assumes an un-adjusted start date.
+    So, instead we'll use calculator.nearest_start_date_after_basedate(...) which will calculate
+    the next unadjusted date, which we will then manually adjust and set as the next cycle start date.
+    '''
     if workflow.next_cycle_start_date == date.today():
-      workflow.next_cycle_start_date = date.today() + \
-          RelativeTimeboxed.freq_to_delta(workflow.frequency)
+      workflow.next_cycle_start_date = \
+        WorkflowDateCalculator.adjust_start_date(
+          calculator.nearest_start_date_after_basedate(
+            workflow.next_cycle_start_date + timedelta(days=1))
+        )
     db.session.add(workflow)
 
 def _create_cycle_task(task_group_task, cycle, cycle_task_group, current_user,
