@@ -4,6 +4,7 @@
 # Maintained By: laran@reciprocitylabs.com
 
 from datetime import date, timedelta
+from monthdelta import monthdelta
 
 '''
 All dates are calculated raw. They are not adjusted for holidays or workdays.
@@ -112,7 +113,6 @@ class WorkflowDateCalculator(object):
   def nearest_start_date_after_basedate_from_dates(
       basedate, frequency, relative_start_month, relative_start_day):
 
-    from monthdelta import monthdelta
     basedate_day_of_week = basedate.isoweekday()
     basedate_day_of_month = basedate.day
     basedate_month_of_year = basedate.month
@@ -232,8 +232,6 @@ class WorkflowDateCalculator(object):
       else:
         return start_date + timedelta(days=(end_day - start_date_day_of_week))
     elif "monthly" == frequency:
-      from monthdelta import monthdelta
-
       if end_day == start_date_day_of_month:
         return start_date
       elif end_day < start_date_day_of_month:
@@ -266,7 +264,6 @@ class WorkflowDateCalculator(object):
           month=start_date_month_of_year + (end_month - start_quarter_month),
           day=end_day)
       else:
-        from monthdelta import monthdelta
         end_date = date(
           year=start_date.year,
           month=start_date.month,
@@ -305,7 +302,6 @@ class WorkflowDateCalculator(object):
 
   @staticmethod
   def next_cycle_start_date_after_start_date(start_date, frequency):
-    from monthdelta import monthdelta
     if "one_time" == frequency:
       return start_date
     elif "weekly" == frequency:
@@ -343,7 +339,6 @@ class WorkflowDateCalculator(object):
 
   @staticmethod
   def previous_cycle_start_date(start_date, frequency):
-    from monthdelta import monthdelta
     if "one_time" == frequency:
       return start_date
     elif "weekly" == frequency:
