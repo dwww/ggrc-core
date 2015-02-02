@@ -29,10 +29,12 @@ ggrc_global_npm_modules:
   - name: karma-cli
   - name: jasmine-core
   - name: mkdirp
+  - name: phantomjs
 
 ggrc_local_npm_modules:
   - name: karma
   - name: karma-jasmine
+  - name: karma-phantomjs-launcher
 
 ggrc_gems:
   - name: sass
