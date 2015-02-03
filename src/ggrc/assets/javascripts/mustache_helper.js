@@ -1796,8 +1796,7 @@ Mustache.registerHelper("with_is_reviewer", function (options) {
   tasks = Mustache.resolve(tasks);
   for(i = 0; i < tasks.length; i++) {
     if (current_user_id == tasks[i].instance.contact.id) {
-    // NOTE: Note that the review_task is set into the context here as well.
-    }
+      // NOTE: Note that the review_task is set into the context here as well.
       return options.fn(options.contexts.add({is_reviewer: true, review_task: tasks[i].instance}));
     }
   }
