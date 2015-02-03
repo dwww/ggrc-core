@@ -263,21 +263,39 @@ OP
         }
       };
     }
-  / _* op:'~' _*
-    {
-      return {
-        name: op,
-        evaluate: function(val1, val2) {
-          return val1.toUpperCase().indexOf(val2.toUpperCase()) > -1 ;
-        }
-      };
-    }
   / _* op:'!=' _*
     {
       return {
         name: op,
         evaluate: function(val1, val2) {
           return val1 != val2;
+        }
+      };
+    }
+  / _* op:'<' _*
+    {
+      return {
+        name: op,
+        evaluate: function(val1, val2) {
+          return val1 < val2;
+        }
+      };
+    }
+  / _* op:'>' _*
+    {
+      return {
+        name: op,
+        evaluate: function(val1, val2) {
+          return val1 > val2;
+        }
+      };
+    }
+  / _* op:'~' _*
+    {
+      return {
+        name: op,
+        evaluate: function(val1, val2) {
+          return val1.toUpperCase().indexOf(val2.toUpperCase()) > -1 ;
         }
       };
     }
