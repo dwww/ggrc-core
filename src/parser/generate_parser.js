@@ -18,6 +18,7 @@ Script used to generate ggrc_filter_query_parser.js
 to run this script you need node.js and peg.js
   sudo apt-get install nodejs npm
   npm install pegjs
+  npm install mkdirp
 
 if npm install returns a 404 just run the next command and try again.
   npm config set registry http://registry.npmjs.org/
@@ -36,7 +37,7 @@ and run with the test folder
 
 
 var parser_grammar = '/vagrant/src/parser/parser.pegjs';
-var parser_header_file = '/vagrant/src/parser/parser_header.txt'; 
+var parser_template_file = '/vagrant/src/parser/parser_template.js'; 
 var ggrc_parser_folder = '/vagrant/src/ggrc/assets/javascripts/generated/';
 var ggrc_parser_js_file = 'ggrc_filter_query_parser.js';
 
@@ -44,7 +45,7 @@ var peg = require('pegjs');
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var parser_string = fs.readFileSync(parser_grammar, 'utf8');
-var header_string = fs.readFileSync(parser_header_file, 'utf8');
+var filter_template = fs.readFileSync(parser_template_file, 'utf8');
 
 
 // dirty way of making the parser work in node.js without jquery
@@ -60,24 +61,26 @@ var parser = peg.buildParser(parser_string);
 var parser_src = peg.buildParser(parser_string, {output: "source"});
 
 console.log('saving parser to js files');
-var ggrc_parser = header_string + 'GGRC.query_parser = ' + parser_src;
+var ggrc_parser = filter_template.replace('GENERATED_PLACEHOLDER', parser_src);
 
 mkdirp.sync(ggrc_parser_folder);
 fs.writeFileSync(ggrc_parser_folder + ggrc_parser_js_file, ggrc_parser);
 
 // some sanity checks:
 // actual tests are located in src/ggrc/assets/js_specs/generated
-console.log('testing parser');
+console.log('\nsome sanity tests');
 var p = parser.parse('a="b" and (c=d or dd=something && aoeu=dd)');
 var pp = parser.parse('(a=b and c=d) or dd=something && aoeu=dd');
 
 var vals = {a:'b', c:'d', dd:'something', aoeu:'dd', y:'neki'};
 var vals2 = {a:'bb', c:'d', dd:'something', aoeu:'dd', y:'neki'};
 var vals3 = {a:'bi', c:'d', dd:'something', aoeu:'dd', y:'neki'};
-console.log('should be true  :', p.evaluate(vals));
-console.log('should be false :', p.evaluate(vals2));
-console.log('should be true  :', pp.evaluate(vals2));
+console.log('true  :', p.evaluate(vals));
+console.log('false :', p.evaluate(vals2));
+console.log('true  :', pp.evaluate(vals2));
+console.log("true  :", parser.parse('~  b  ').evaluate(vals2))
 
-console.log(parser.parse('a = oueo order by a,b,"c c"'))
+console.log("exp: ", parser.parse('a = oueo order by a,b,"c c"'))
+console.log("exp: ", parser.parse('~ order by  aaa'))
 
-console.log('done :)');
+console.log('\ndone :)');

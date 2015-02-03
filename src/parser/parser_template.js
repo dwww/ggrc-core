@@ -2,7 +2,7 @@
     Copyright (C) 2013 Google Inc., authors, and contributors <see AUTHORS file>
     Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
     Created By: miha@reciprocitylabs.com
-    Maintained By: mih@reciprocitylabs.com
+    Maintained By: miha@reciprocitylabs.com
 */
 
 /*
@@ -13,4 +13,14 @@ see: src/parser/generate_parser.js
 
 */
 
-
+GGRC.query_parser = {
+  parse: function parse(query) {
+    try {
+      return this.generated.parse(query);
+    } catch (e) {
+      // force texst search if anything goes wrong
+      return this.generated.parse("~" + query);
+    }
+  },
+  generated: GENERATED_PLACEHOLDER
+}
