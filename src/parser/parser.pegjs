@@ -174,19 +174,26 @@ simple_exp
         }
       };
     }
-  / left:word
+  / paren_exp
+  / text_exp
+
+text_exp
+  = _* "~" characters:.*
     {
       return {
-        left: left,
-        op: 'boolean',
-        keys: [left],
+        text: characters.join("").trim(),
+        op: 'text_search',
+        keys: [],
         evaluate: function(values){
-          return values(left);
+          for (var i in values){
+            if (values[i].toUpperCase().indexOf(this.text.toUpperCase()) > -1 ){
+              return true;
+            }
+          }
+          return false;
         }
       };
     }
-  / paren_exp
-
 
 paren_exp 
   = LEFT_P or_exp:or_exp RIGHT_P
