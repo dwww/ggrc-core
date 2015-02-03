@@ -23,4 +23,4 @@ GGRC.query_parser = {
     }
   },
   generated: GENERATED_PLACEHOLDER
-}
+};

@@ -1706,4 +1706,4 @@ GGRC.query_parser = {
     parse:       parse
   };
 })()
-}
+};
