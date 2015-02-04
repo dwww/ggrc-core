@@ -22,7 +22,10 @@ describe('GGRC.query_parser', function() {
 
   var parser_structure = {
     parse: jasmine.any(Function),
-    SyntaxError: jasmine.any(Function)
+    generated: {
+      parse: jasmine.any(Function),
+      SyntaxError: jasmine.any(Function)
+    }
   };
 
 
@@ -49,55 +52,32 @@ describe('GGRC.query_parser', function() {
     });
 
 
-    it("parses simple single word queries", function(){
+    it("parses text search queries", function(){
 
-      var single_word_queries = [
+      var text_search_queries = [
         'a',
         'word',
-        '--this--is',
-        'i_hope-this7531',
-        '7531902468'
+        ' --this --is',
+        ' order by s,thin  "elese" g',
+        '~a',
+        '~word',
+        '~ --this --is',
+        '~ order by something',
+        '~ order by s,thing',
+        '~ order by s,thin  "elese" g',
+        '~7531902 468'
       ];
 
-      can.each(single_word_queries, function(query_str){
+      can.each(text_search_queries, function(query_str){
+        var text = query_str.replace("~","").trim()
         expect(GGRC.query_parser.parse(query_str)).toEqual({
-          expression: {
-            left: query_str,
-            op: 'boolean',
+          expression: { 
+            text: text, 
+            op: 'text_search', 
             evaluate: jasmine.any(Function)
           },
           order_by : { keys : [ ], order : '', compare : null },
-          keys: [query_str],
-          evaluate: jasmine.any(Function)
-        });
-      });
-
-    });
-
-
-    it("parses quoted single word queries", function(){
-
-      var single_word_queries = [
-        '""',
-        '" "',
-        '" word "',
-        '"wo   rd"',
-        '" wo rd  "',
-        '"wo \\\"  rd"',
-        '"\\\"wo\\\"   rd"',
-        '"wo \\\"\\\"  rd\\\""'
-      ];
-
-      can.each(single_word_queries, function(query_str){
-        var unqouted = query_str.slice(1,-1).replace(/\\"/g,'"');
-        expect(GGRC.query_parser.parse(query_str)).toEqual({
-          expression: {
-            left: unqouted,
-            op: 'boolean',
-            evaluate: jasmine.any(Function)
-          },
-          order_by : { keys : [ ], order : '', compare : null },
-          keys: [unqouted],
+          keys: [],
           evaluate: jasmine.any(Function)
         });
       });
@@ -206,6 +186,23 @@ describe('GGRC.query_parser', function() {
             .evaluate(values)).toEqual(true);
       });
 
+      it("does full text search", function(){
+
+        expect(GGRC.query_parser.parse('b')
+            .evaluate(values)).toEqual(true);
+        expect(GGRC.query_parser.parse('~ 22')
+            .evaluate(values)).toEqual(true);
+        expect(GGRC.query_parser.parse('bacon')
+            .evaluate(values)).toEqual(true);
+        expect(GGRC.query_parser.parse('bacon ipsum')
+            .evaluate(values)).toEqual(true);
+        expect(GGRC.query_parser.parse(' ~ bacon ipsum')
+            .evaluate(values)).toEqual(true);
+        expect(GGRC.query_parser.parse(' ~ bacon something ipsum')
+            .evaluate(values)).toEqual(false);
+        expect(GGRC.query_parser.parse('order bacon something ipsum')
+            .evaluate(values)).toEqual(false);
+      });
     });
 
   });
