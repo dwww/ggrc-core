@@ -186,22 +186,25 @@ describe('GGRC.query_parser', function() {
             .evaluate(values)).toEqual(true);
       });
 
-      it("does full text search", function(){
+      var all_keys = ['a', 'hello', 'n', '5words', 'bacon ipsum'];
 
+      it("does full text search", function(){
         expect(GGRC.query_parser.parse('b')
-            .evaluate(values)).toEqual(true);
+            .evaluate(values, ['n'])).toEqual(false);
+        expect(GGRC.query_parser.parse('b')
+            .evaluate(values, all_keys)).toEqual(true);
         expect(GGRC.query_parser.parse('~ 22')
-            .evaluate(values)).toEqual(true);
+            .evaluate(values, all_keys)).toEqual(true);
         expect(GGRC.query_parser.parse('bacon')
-            .evaluate(values)).toEqual(true);
+            .evaluate(values, all_keys)).toEqual(true);
         expect(GGRC.query_parser.parse('bacon ipsum')
-            .evaluate(values)).toEqual(true);
+            .evaluate(values, all_keys)).toEqual(true);
         expect(GGRC.query_parser.parse(' ~ bacon ipsum')
-            .evaluate(values)).toEqual(true);
+            .evaluate(values, all_keys)).toEqual(true);
         expect(GGRC.query_parser.parse(' ~ bacon something ipsum')
-            .evaluate(values)).toEqual(false);
+            .evaluate(values, all_keys)).toEqual(false);
         expect(GGRC.query_parser.parse('order bacon something ipsum')
-            .evaluate(values)).toEqual(false);
+            .evaluate(values, all_keys)).toEqual(false);
       });
     });
 

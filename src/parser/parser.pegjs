@@ -13,7 +13,7 @@ start
         expression: {},
         keys: [],
         order_by: only_order_by,
-        evaluate: function(values) {
+        evaluate: function(values, keys) {
           // functions evaluates the current expresion tree, with the given values
           //
           // * values, Object with all the keys as in the this keys array, 
@@ -30,13 +30,13 @@ start
         expression: or_exp,
         keys: keys,
         order_by: order_by,
-        evaluate: function(values) {
+        evaluate: function(values, keys) {
           // functions evaluates the current expresion tree, with the given values
           //
           // * values, Object with all the keys as in the this keys array, 
           //   with the coresponding values
           try {
-            return or_exp.evaluate(values);
+            return or_exp.evaluate(values, keys);
           } catch (e) {
             return false;
           }
@@ -53,7 +53,7 @@ start
           order: '',
           compare: null
         },
-        evaluate: function(values) {
+        evaluate: function(values, keys) {
           return true;
         }
       };
@@ -184,9 +184,13 @@ text_exp
         text: characters.join("").trim(),
         op: 'text_search',
         keys: [],
-        evaluate: function(values){
-          for (var i in values){
-            if (values[i].toUpperCase().indexOf(this.text.toUpperCase()) > -1 ){
+        evaluate: function(values, keys){
+          if (typeof keys === "undefined")
+            return false;
+
+          for (var i in keys){
+            if (values.hasOwnProperty(keys[i]) &&
+                values[keys[i]].toUpperCase().indexOf(this.text.toUpperCase()) > -1 ){
               return true;
             }
           }
