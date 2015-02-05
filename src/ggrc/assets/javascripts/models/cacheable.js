@@ -106,7 +106,7 @@ can.Model("can.Model.Cacheable", {
   root_object : ""
   , filter_keys : ["title", "description", "contact", "owner", "notes",
                    "kind", "code", "reference_url", "name", "email", 
-                   "company", "status"]
+                   "company", "status", "test", "assignee"]
   , root_collection : ""
   , model_singular : ""
   , model_plural : ""
