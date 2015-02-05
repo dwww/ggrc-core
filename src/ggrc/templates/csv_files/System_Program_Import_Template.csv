@@ -55,3 +55,9 @@ Can be ""Yes"", ""True"", or ""1"" to result in the System being labeled as ""In
 Can be ""No"", ""False"", ""0"" to result in System being labeled as ""Not Infrastructure""","*Optional.
 Can be ""Draft"", ""Final"", ""Effective"", ""Ineffective"", ""Launched"", ""Not Launched"", ""In Scope"", or ""Not in Scope"""
 System Code,Title,Description,Effective Date,URL,Reference URL,Notes,Map:Person of Contact,Map:Controls,Map:System,Map:Process,Map:Org Group,Network Zone,Infrastructure,State
+
+CUSTOM ATTRIBUTES
+Systems can have custom attributes. Custom attributes are defined by admins. You will know when custom attributes are defined by the fact that they will show up in the Custom Attributes panel on any System.
+Custom attributes can be set through import by adding columns to the import template where the column header is the name of the attribute.
+Columns for attributes that don't exist will be ignored. You will be prompted when uploading/importing the template about the extra attributes. This prompt is purely informational and does not require any action on your part.
+When you have custom attributes defined for Systems and columns in the import template are left out, the values of those attributes on the Systems you upload will be nullified/unset/removed.

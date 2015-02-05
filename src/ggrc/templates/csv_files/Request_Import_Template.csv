@@ -9,3 +9,8 @@ Enter the Codes for already existing objects if you want to use Import as a mean
 Use this text field to keep notes about this Request",Optional Text Field,"If not specified, value will default to Audit Lead",MM/DD/YYYY,MM/DD/YYYY,Draft / Requested / Responded / Amended Request / Updated Response / Accepted
 Request Code,Request Type,Request Description,Control Code,Objective Code,Notes,Test,Assignee,Requested On,Due On,Status
 
+CUSTOM ATTRIBUTES
+Requests can have custom attributes. Custom attributes are defined by admins. You will know when custom attributes are defined by the fact that they will show up in the Custom Attributes panel on any Request.
+Custom attributes can be set through import by adding columns to the import template where the column header is the name of the attribute.
+Columns for attributes that don't exist will be ignored. You will be prompted when uploading/importing the template about the extra attributes. This prompt is purely informational and does not require any action on your part.
+When you have custom attributes defined for Requests and columns in the import template are left out, the values of those attributes on the Requests you upload will be nullified/unset/removed.

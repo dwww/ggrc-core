@@ -18,3 +18,9 @@ Example:
 CONTROL-1
 CONTROL-2",*Ignore Created and Updated date columns for import.  These are really only useful for Exports.,
 {{section_term}} Code,{{section_term}} Title,{{section_term}} Description,Notes,Reference URL,Map:Person of Contact,Controls,Created,Updated
+
+CUSTOM ATTRIBUTES
+Sections can have custom attributes. Custom attributes are defined by admins. You will know when custom attributes are defined by the fact that they will show up in the Custom Attributes panel on any Section.
+Custom attributes can be set through import by adding columns to the import template where the column header is the name of the attribute.
+Columns for attributes that don't exist will be ignored. You will be prompted when uploading/importing the template about the extra attributes. This prompt is purely informational and does not require any action on your part.
+When you have custom attributes defined for Sections and columns in the import template are left out, the values of those attributes on the Sections you upload will be nullified/unset/removed.
