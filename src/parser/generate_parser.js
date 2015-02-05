@@ -47,11 +47,13 @@ var mkdirp = require('mkdirp');
 var parser_string = fs.readFileSync(parser_grammar, 'utf8');
 var filter_template = fs.readFileSync(parser_template_file, 'utf8');
 
-
 // dirty way of making the parser work in node.js without jquery
 root.jQuery = {
   unique : function(k) {
     return Object.keys(k.reduce(function(o,v,i) {o[v] = true; return o;}, {}));
+  },
+  type : function(o) {
+    return typeof o;
   }
 }
 
