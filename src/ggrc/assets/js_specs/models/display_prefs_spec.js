@@ -125,7 +125,7 @@ describe("display prefs model", function() {
        display_prefs.setFilterHidden(true);
          
        expect(
-         display_prefs.attr([exp.path, exp.FILTER_HIDDEN].join(".")).filter_hidden.is_hidden
+         display_prefs.attr([exp.path, exp.FILTER_WIDGET].join(".")).filter_widget.is_hidden
        ).toBe(true);
      });
         

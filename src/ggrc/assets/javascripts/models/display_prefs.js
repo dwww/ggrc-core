@@ -20,7 +20,7 @@ var COLLAPSE = "collapse"
 , GLOBAL = "global"
 , LHN_STATE = "lhn_state"
 , TOP_NAV = "top_nav"
-, FILTER_HIDDEN = "filter_hidden"
+, FILTER_WIDGET = "filter_widget"
 , path = window.location.pathname.replace(/\./g, "/");
 
 can.Model.LocalStorage("CMS.Models.DisplayPrefs", {
@@ -167,14 +167,14 @@ can.Model.LocalStorage("CMS.Models.DisplayPrefs", {
   }
 
   , setFilterHidden: function (is_hidden) {
-    this.makeObject(path, FILTER_HIDDEN).attr("is_hidden", is_hidden);
+    this.makeObject(path, FILTER_WIDGET).attr("is_hidden", is_hidden);
 
     this.autoupdate && this.save();
     return this;
   }
 
   , getFilterHidden: function () {
-    var value = this.getObject(path, FILTER_HIDDEN);
+    var value = this.getObject(path, FILTER_WIDGET);
 
     if (typeof value === "undefined") {
       this.setFilterHidden(false);
