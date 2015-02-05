@@ -640,8 +640,7 @@ CMS.Controllers.TreeLoader("CMS.Controllers.TreeView", {
         ;
       options_list = can.makeArray(options_list);
       can.map(options_list, function(options) {
-        
-        if ( !filter || filter.evaluate(options.instance._data, 
+        if ( !filter || filter.evaluate(options.instance, 
               options.instance.class.filter_keys)) {
           var $li = $("<li />").cms_controllers_tree_view_node(options);
           draw_items_dfds.push($li.control()._draw_node_deferred);

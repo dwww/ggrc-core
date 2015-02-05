@@ -86,9 +86,9 @@ only_order_by
         compare: function(val1, val2){
           for (var i in word_list){
             var key = word_list[i];
-            if (val1._data[key] !== val2._data[key]){
-              var a = parseFloat(val1._data[key]) || val1._data[key],
-                  b = parseFloat(val2._data[key]) || val2._data[key];
+            if (val1[key] !== val2[key]){
+              var a = parseFloat(val1[key]) || val1[key],
+                  b = parseFloat(val2[key]) || val2[key];
               return (a < b) ^ (order !== 'asc')
             }
           }
