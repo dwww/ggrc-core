@@ -104,6 +104,9 @@ function makeDateSerializer(type, key) {
 can.Model("can.Model.Cacheable", {
 
   root_object : ""
+  , filter_keys : ["title", "description", "contact", "owner", "notes",
+                   "kind", "code", "reference_url", "name", "email", 
+                   "company", "status"]
   , root_collection : ""
   , model_singular : ""
   , model_plural : ""
