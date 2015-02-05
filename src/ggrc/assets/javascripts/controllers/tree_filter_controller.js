@@ -11,28 +11,36 @@ can.Control("GGRC.Controllers.TreeFilter", {
     this.on();
   }
 
-  , "input, select change" : function(el, ev) {
-
-    if (el.is(":text")) {
-      // if we have a custom filter inside a text field.
-
+  , apply_filter : function(filter_string){
       var tree_view = this.element.closest('.cms_controllers_tree_view').control();
-      this.current_query = GGRC.query_parser.parse(el.val());
+      this.current_query = GGRC.query_parser.parse(filter_string);
       tree_view.options.attr('sort_function', this.current_query.order_by.compare);
       tree_view.options.attr('filter', this.current_query);
       tree_view.reload_list();
+  }
+         
+  , ".btn click" : function(el, ev) {
+    this.apply_filter(this.element.find("input[type=text]")[0].value)
+  }
 
+  , "input keyup" : function(el, ev) {
+    if (ev.keyCode == 13){
+      this.apply_filter(el.val());
+    }
+    ev.stopPropagation();
+  }
+
+  , "input, select change" : function(el, ev) {
+    
+    // this is left from the old filters and should eventually be replaced
+    // Convert '.' to '__' ('.' will cause can.Observe to try to update a path instead of just a key)
+    var name = el.attr("name").replace(/\./g, '__');
+    if(el.is(".hasDatepicker")) {
+      this.options.states.attr(name, moment(el.val(), "MM/DD/YYYY"));
+    } else if (el.is(":checkbox") && !el.is(":checked")) {
+      this.options.states.removeAttr(name);
     } else {
-      // this is left from the old filters and should eventually be replaced
-      // Convert '.' to '__' ('.' will cause can.Observe to try to update a path instead of just a key)
-      var name = el.attr("name").replace(/\./g, '__');
-      if(el.is(".hasDatepicker")) {
-        this.options.states.attr(name, moment(el.val(), "MM/DD/YYYY"));
-      } else if (el.is(":checkbox") && !el.is(":checked")) {
-        this.options.states.removeAttr(name);
-      } else {
-        this.options.states.attr(name, el.val());
-      }
+      this.options.states.attr(name, el.val());
     }
     ev.stopPropagation();
   }
