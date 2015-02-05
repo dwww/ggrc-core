@@ -162,4 +162,34 @@ CMS.Controllers.Filterable("CMS.Controllers.DashboardWidgets", {
           return that.content_controller.display_path(path);
       });
     }
+
+  , ".filter-trigger > a click": function (element, event) {
+      if (element.hasClass("active")) {
+        this.hide_filter();
+      }else{
+        this.show_filter();
+      }
+    }
+
+  , hide_filter: function () {
+      var $filter = this.element.find(".sticky-filter");
+
+      $filter
+          .data("height", $filter.height())
+          .animate({height: 0},
+                   {duration: 800,
+                    easing: 'easeOutExpo'});
+      this.element.find(".filter-trigger > a").removeClass("active");
+    }
+
+  , show_filter: function () {
+      var $filter = this.element.find(".sticky-filter");
+
+      $filter
+          .animate({height: $filter.data("height")},
+                   {duration: 800,
+                    easing: 'easeOutExpo'});
+
+      this.element.find(".filter-trigger > a").addClass("active");
+    }
 });
