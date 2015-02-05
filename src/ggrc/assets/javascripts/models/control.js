@@ -19,7 +19,6 @@ can.Model.Cacheable("CMS.Models.Control", {
   , destroy : "DELETE /api/controls/{id}"
   , mixins : ["ownable", "contactable", "unique_title"]
   , is_custom_attributable: true
-  , filter_keys : ['title', 'description', 'contact', 'owner', 'notes', 'code', 'reference_url']
   , attributes : {
       context : "CMS.Models.Context.stub"
     , owners : "CMS.Models.Person.stubs"
