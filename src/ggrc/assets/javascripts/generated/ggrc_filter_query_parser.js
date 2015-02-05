@@ -205,14 +205,20 @@ GGRC.query_parser = {
                 text: characters.join("").trim(),
                 op: 'text_search',
                 keys: [],
-                evaluate: function(values, keys){
-                  if (typeof keys === "undefined")
-                    return false;
+                evaluate: function(values, keys, recursive){
+
+                  recursive = typeof recursive !== 'undefined' ? recursive : true;
+                  keys = typeof keys !== 'undefined' ? keys : [];
 
                   for (var i in keys){
-                    if (values.hasOwnProperty(keys[i]) &&
-                        values[keys[i]].toUpperCase().indexOf(this.text.toUpperCase()) > -1 ){
-                      return true;
+                    if (values.hasOwnProperty(keys[i])){
+                      if (jQuery.type(values[keys[i]]) === "string" &&
+                          values[keys[i]].toUpperCase().indexOf(this.text.toUpperCase()) > -1 ){
+                        return true;
+                      } else if (recursive && jQuery.type(values[keys[i]]) === "object" && 
+                          jQuery.type(values[keys[i]].reify) === "function"){
+                        return this.evaluate(values[keys[i]].reify(), keys, false);
+                      }
                     }
                   }
                   return false;
