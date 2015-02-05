@@ -116,6 +116,31 @@ describe("display prefs model", function() {
     });
   });
 
+   describe("filter hiding", function () {
+     afterEach(function() {
+       display_prefs.resetPagePrefs(); 
+     });
+
+     it("sets filter hidden", function() {
+       display_prefs.setFilterHidden(true);
+         
+       expect(
+         display_prefs.attr([exp.path, exp.FILTER_HIDDEN].join(".")).filter_hidden.is_hidden
+       ).toBe(true);
+     });
+        
+     it("gets filter hidden", function () {
+       display_prefs.setFilterHidden(true);
+            
+       expect(display_prefs.getFilterHidden()).toBe(true);
+     });
+        
+     it("returns false by default", function () {
+       expect(display_prefs.getFilterHidden()).toBe(false);
+     }); 
+   });
+
+
   describe("#setCollapsed", function() {
     afterEach(function() {
       display_prefs.removeAttr(exp.COLLAPSE);
