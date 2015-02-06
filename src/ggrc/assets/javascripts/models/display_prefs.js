@@ -20,6 +20,7 @@ var COLLAPSE = "collapse"
 , GLOBAL = "global"
 , LHN_STATE = "lhn_state"
 , TOP_NAV = "top_nav"
+, FILTER_WIDGET = "filter_widget"
 , path = window.location.pathname.replace(/\./g, "/");
 
 can.Model.LocalStorage("CMS.Models.DisplayPrefs", {
@@ -163,6 +164,24 @@ can.Model.LocalStorage("CMS.Models.DisplayPrefs", {
     }
 
     return value.widget_list && value.widget_list.serialize() || {};
+  }
+
+  , setFilterHidden: function (is_hidden) {
+    this.makeObject(path, FILTER_WIDGET).attr("is_hidden", is_hidden);
+
+    this.autoupdate && this.save();
+    return this;
+  }
+
+  , getFilterHidden: function () {
+    var value = this.getObject(path, FILTER_WIDGET);
+
+    if (typeof value === "undefined") {
+      this.setFilterHidden(false);
+      return false;
+    }
+
+    return value.is_hidden;
   }
 
   , setLHNavSize : function(page_id, widget_id, size) {

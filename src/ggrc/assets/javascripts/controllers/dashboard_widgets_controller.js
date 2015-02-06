@@ -28,30 +28,34 @@ CMS.Controllers.Filterable("CMS.Controllers.DashboardWidgets", {
 }, {
 
   init : function() {
-    if(!this.options.model && GGRC.page_model) {
-      this.options.model = GGRC.infer_object_type(GGRC.page_object);
-    }
+    CMS.Models.DisplayPrefs.getSingleton().then(function (prefs) {
+      this.display_prefs = prefs;
 
-    if(!this.options.widget_icon && this.options.model) {
-      this.options.widget_icon = this.options.model.table_singular;
-    }
-    if(this.options.widget_icon && !/^grcicon/.test(this.options.widget_icon)) {
-      this.options.widget_icon = "grcicon-" + this.options.widget_icon + "-color";
-    }
+      if(!this.options.model && GGRC.page_model) {
+        this.options.model = GGRC.infer_object_type(GGRC.page_object);
+      }
 
-    if(!this.options.object_category && this.options.model) {
-      this.options.object_category = this.options.model.category;
-    }
+      if(!this.options.widget_icon && this.options.model) {
+        this.options.widget_icon = this.options.model.table_singular;
+      }
+      if(this.options.widget_icon && !/^grcicon/.test(this.options.widget_icon)) {
+        this.options.widget_icon = "grcicon-" + this.options.widget_icon + "-color";
+      }
 
-    this.options.widget_count = new can.Observe();
+      if(!this.options.object_category && this.options.model) {
+        this.options.object_category = this.options.model.category;
+      }
 
-    this.element
-      .addClass("widget")
-      .addClass(this.options.object_category)
-      .attr("id", this.options.widget_id + "_widget")
-      //  This is used only by ResizeWidgets controller
-      .trigger("section_created");
-      ;
+      this.options.widget_count = new can.Observe();
+      this.options.filter_is_hidden = this.display_prefs.getFilterHidden();
+
+      this.element
+            .addClass("widget")
+            .addClass(this.options.object_category)
+            .attr("id", this.options.widget_id + "_widget")
+        //  This is used only by ResizeWidgets controller
+            .trigger("section_created");
+    }.bind(this));
   }
 
   , prepare: function() {
@@ -161,5 +165,41 @@ CMS.Controllers.Filterable("CMS.Controllers.DashboardWidgets", {
         if (that.content_controller && that.content_controller.display_path)
           return that.content_controller.display_path(path);
       });
+    }
+
+  , ".filter-trigger > a click": function (element, event) {
+      if (element.hasClass("active")) {
+        this.hide_filter();
+      }else{
+        this.show_filter();
+      }
+    }
+
+  , hide_filter: function () {
+      var $filter = this.element.find(".sticky-filter");
+
+      $filter
+          .data("height", $filter.height())
+          .animate({height: 0},
+                   {duration: 800,
+                    easing: 'easeOutExpo'});
+      this.element.find(".filter-trigger > a").removeClass("active");
+
+      this.display_prefs.setFilterHidden(true);
+      this.display_prefs.save();
+    }
+
+  , show_filter: function () {
+      var $filter = this.element.find(".sticky-filter");
+
+      $filter
+          .animate({height: $filter.data("height")},
+                   {duration: 800,
+                    easing: 'easeOutExpo'});
+
+      this.element.find(".filter-trigger > a").addClass("active");
+
+      this.display_prefs.setFilterHidden(false);
+      this.display_prefs.save();
     }
 });
