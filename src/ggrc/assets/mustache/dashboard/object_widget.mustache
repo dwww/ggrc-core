@@ -6,6 +6,198 @@
 }}
 
 {{!section class="widget... }}
+  {{#if_equals widget_id "people_list"}}
+  <div class="filter-holder">
+    <div class="inline-filtering sticky-filter search-filters">
+      <form class="form-search" onsubmit="return false" autocomplete="off">
+        <div class="row-fluid">
+          <div class="span3">
+            <div class="filter-title">
+              <h6>
+                Filter People
+              </h6>
+            </div>
+          </div>
+          <div class="span9">
+            <ul class="quick-filters">
+              <li>
+                <label>
+                  By Name
+                </label>
+                <input name="search" type="text" value="" class="input-medium" value="{{search_query}}" placeholder="By name, email or company">
+              </li>
+              <li>
+                <label>
+                  By Roles
+                </label>
+                <select name="user_role">
+                  <option value="" selected>All Roles</option>
+                  {{#roles}}
+                    <option value="{{id}}">{{name}}</option>
+                  {{/roles}}
+                </select>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {{/if_equals}}
+
+  {{#if_equals widget_id "task"}}
+  <div class="filter-holder">
+    <div class="inline-filtering task-filtering">
+      <form class="form-search" onsubmit="return false" autocomplete="off">
+        <div class="row-fluid">
+          <div class="span2">
+            <div class="filter-title">
+              <h6>
+                Filter Tasks
+              </h6>
+            </div>
+          </div>
+          <div class="span2">
+            {{#is_dashboard}}
+              <input type="text" name="cycle_task_group_object.title" {{data 'from-list'}} data-lookup="cycle_task_group_object.object" class="input-block-level" placeholder="Filter by Object" data-template="/directives/autocomplete_result.mustache" value="" {{^list}}disabled="disabled"{{/list}}>
+            {{/is_dashboard}}
+          </div>
+          <div class="span2">
+            <input type="text" name="cycle.workflow.title" {{data 'from-list'}} data-lookup="cycle.workflow" class="input-block-level" placeholder="Filter by Workflow" value="" {{^list}}disabled="disabled"{{/list}}>
+          </div>
+          <div class="span6">
+            <ul class="quick-filters">
+              <li>
+                <label>
+                  By Status
+                </label>
+                <select name="status" class="input-small">
+                  <option value="">Any</option>
+                  <option value="Verified">Verified</option>
+                  <option value="Finished">Finished</option>
+                  <option value="InProgress">In Progress</option>
+                  <option value="Assigned">Assigned</option>
+                </select>
+              </li>
+              <li>
+                <label>
+                  <input class="checkbox" type="checkbox" value="overdue" name="overdue">
+                  Show overdue only
+                </label>
+              </li>
+              <li>
+                <label>
+                  <input class="checkbox" type="checkbox"
+                    custom-event="show-history"
+                    data-toggle="filter-reset"
+                    name="h"
+                    mapping="{{toggle_string mapping '_with_history'}}">
+                  Show History
+                </label>
+              </li>
+              <li>
+                <button type="reset" class="btn btn-small btn-draft" data-toggle="filter-reset">Reset</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {{/if_equals}}
+
+  {{#if_equals widget_id "request"}}
+  <div class="filter-holder">
+    <div class="sticky-filter inner-filter-sticky">
+      <div class="inline-filtering" {{ (el) -> el.ggrc_controllers_tree_filter() }} >
+        <form>
+          <div class="row-fluid">
+            <div class="span3">
+              <div class="filter-title">
+                <h6>
+                  Filter Requests
+                </h6>
+              </div>
+            </div>
+            <div class="span9">
+              <ul class="quick-filters">
+                <li>
+                  <label>
+                    Requested before
+                  </label>
+                  <input class="input-date date" name="requested_on" data-toggle="datepicker" data-after="filter_start_date" placeholder="/ /" type="text" value="">
+                </li>
+                <li>
+                  <label>
+                    By Type
+                  </label>
+                  <select name="request_type">
+                    {{#iterate "" "Documentation" "Interview"}}
+                    <option value="{{iterator.toLowerCase}}" {{#iterator.toLowerCase}}{{#trim}}{{#if_equals this states.request_type}}selected="true"{{/trim}}{{/iterator.toLowerCase}}{{/if_equals}}>{{firstnonempty iterator "Any"}}</option>
+                    {{/iterate}}
+                  </select>
+                </li>
+                <li>
+                  <label>
+                    By Status
+                  </label>
+                  <select name="status">
+                    <option value="" selected="true">Any</option>
+                    <option>Draft</option>
+                    <option>Requested</option>
+                    <option>Responded</option>
+                    <option>Amended Request</option>
+                    <option>Updated Response</option>
+                    <option>Accepted</option>
+                  </select>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {{/if_equals}}
+
+  {{^if_equals widget_id "task"}}
+  {{^if_equals widget_id "info"}}
+  {{^if_equals widget_id "people_list"}}
+  {{^if_equals widget_id "request"}}
+  <div class="filter-holder">
+    <div class="sticky-filter inner-filter-sticky">
+      <div class="inline-filtering"  >
+        <div class="row-fluid">
+          <div class="span2">
+            <div class="filter-title">
+              <h6>
+                Filter
+                {{#instance}}
+                  {{far_model.title_plural}}
+                {{/instance}}
+              </h6>
+            </div>
+          </div>
+          <div class="span8">
+            <div class="filter-input">
+              <input name="filter_query" type="text" class="input-wide">
+            </div>
+          </div>
+          <div class="span2">
+            <div class="filter-button">
+              <i class="grcicon-help-black" rel="tooltip" placeholder="left" data-original-title="Description goes here"></i>
+              <input type="submit" class="btn btn-small btn-info" name="" id="" value="Filter">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{/if_equals}}
+  {{/if_equals}}
+  {{/if_equals}}
+  {{/if_equals}}
+
   {{#if_equals widget_id "roles_list"}}
     <header class="header tree-header no-left-space">
       <div class="row-fluid">

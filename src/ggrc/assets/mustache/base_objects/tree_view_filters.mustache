@@ -4,30 +4,3 @@
     Created By: miha@reciprocitylabs.com
     Maintained By: miha@reciprocitylabs.com
 }}
-<li class="sticky-filter inner-filter-sticky">
-  <div class="inline-filtering" {{ (el) -> el.ggrc_controllers_tree_filter() }} >
-    <div class="row-fluid">
-      <div class="span2">
-        <div class="filter-title">
-          <h6>
-            Filter
-            {{#instance}}
-              {{firstnonempty constructor.title_singular}}
-            {{/instance}}
-          </h6>
-        </div>
-      </div>
-      <div class="span8">
-        <div class="filter-input">
-          <input name="filter_query" type="text" class="input-wide">
-        </div>
-      </div>
-      <div class="span2">
-        <div class="filter-button">
-          <i class="grcicon-help-black" rel="tooltip" placeholder="left" data-original-title="Description goes here"></i>
-          <input type="submit" class="btn btn-small btn-info" name="" id="" value="Filter">
-        </div>
-      </div>
-    </div>
-  </div>
-</li>
