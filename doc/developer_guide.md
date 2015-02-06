@@ -511,7 +511,7 @@ GGRC\_SETTINGS\_MODULE, db_migrate should pick up any migrations automatically. 
  ```
 
 * Views
- * Any special templates should be placed under &lt;extension\_module\_name&gt;/templates/ and called as normal. 
+ * Any special templates should be placed under `<extension_module_name>/templates/` and called as normal. 
  * To set up an object page for one of the contributed model classes, declare a function similar to this (this function will work as long as your module hierarchy is flat with all models at the first level and you want all of your objects to have pages):
  
  ```python
