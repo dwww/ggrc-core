@@ -176,7 +176,7 @@ CMS.Controllers.Filterable("CMS.Controllers.DashboardWidgets", {
     }
 
   , hide_filter: function () {
-      var $filter = this.element.find(".sticky-filter");
+      var $filter = this.element.find(".filter-holder");
 
       $filter
           .data("height", $filter.height())
@@ -190,7 +190,7 @@ CMS.Controllers.Filterable("CMS.Controllers.DashboardWidgets", {
     }
 
   , show_filter: function () {
-      var $filter = this.element.find(".sticky-filter");
+      var $filter = this.element.find(".filter-holder");
 
       $filter
           .animate({height: $filter.data("height")},

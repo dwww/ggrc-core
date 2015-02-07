@@ -7,8 +7,8 @@
 
 {{!section class="widget... }}
   {{#if_equals widget_id "people_list"}}
-  <div class="filter-holder">
-    <div class="inline-filtering sticky-filter search-filters">
+  <div class="filter-holder" {{#filter_is_hidden}}style="height: 0px" data-height="42"{{/filter_is_hidden}}>
+    <div class="inline-filtering sticky-filter search-filters" >
       <form class="form-search" onsubmit="return false" autocomplete="off">
         <div class="row-fluid">
           <div class="span3">
@@ -46,7 +46,7 @@
   {{/if_equals}}
 
   {{#if_equals widget_id "task"}}
-  <div class="filter-holder">
+  <div class="filter-holder" {{#filter_is_hidden}}style="height: 0px" data-height="42"{{/filter_is_hidden}}>
     <div class="inline-filtering task-filtering">
       <form class="form-search" onsubmit="return false" autocomplete="off">
         <div class="row-fluid">
@@ -107,7 +107,7 @@
   {{/if_equals}}
 
   {{#if_equals widget_id "request"}}
-  <div class="filter-holder">
+  <div class="filter-holder" {{#filter_is_hidden}}style="height: 0px" data-height="42"{{/filter_is_hidden}}>
     <div class="sticky-filter inner-filter-sticky">
       <div class="inline-filtering" {{ (el) -> el.ggrc_controllers_tree_filter() }} >
         <form>
@@ -164,7 +164,7 @@
   {{^if_equals widget_id "info"}}
   {{^if_equals widget_id "people_list"}}
   {{^if_equals widget_id "request"}}
-  <div class="filter-holder">
+  <div class="filter-holder" {{#filter_is_hidden}}style="height: 0px" data-height="42"{{/filter_is_hidden}}>
     <div class="sticky-filter inner-filter-sticky">
       <div class="inline-filtering"  >
         <div class="row-fluid">
