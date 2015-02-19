@@ -458,8 +458,6 @@ can.Control("CMS.Controllers.InnerNav", {
       $('[href=' + (selector || that.options.contexts.attr('active_widget').selector) + ']')
         .closest('li').addClass('active')
         .siblings().removeClass('active');
-      // Trigger a scroll event to update sticky headers
-      widget.trigger('scroll');
     }
   }
 

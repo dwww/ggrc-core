@@ -18,6 +18,7 @@ dashboard-js-files:
   - bootstrap-popover.js
   - bootstrap/sticky-popover.js
   - bootstrap/modal-form.js
+  - stickyfill.js
   - can.jquery.js
   - can.construct.super.js
   - can.map.validations.js
@@ -37,7 +38,6 @@ dashboard-js-files:
   - spin.min.js
   - client_record_replay.js
   - mustache_helper.js
-  - sticky_header.js
   - generated/ggrc_filter_query_parser.js
   - models/mappers.js
   - models/mappings.js

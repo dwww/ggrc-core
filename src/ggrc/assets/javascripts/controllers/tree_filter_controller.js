@@ -157,15 +157,5 @@ can.Control("GGRC.Controllers.TreeFilter", {
     return obj;
   }
 
-  //this controller is used in sticky headers which clone the original element.
-  // It should only be destroyed when the original element is destroyed, not any clone.
-  , destroy : function(el, ev) {
-    var sticky;
-    if(this.element.is(el)) {
-      this._super.apply(this, arguments);
-    } else if((sticky = this.element.data("sticky")) && el.is(sticky.clone)) {
-      delete sticky.clone;
-    }
-  }
 
 });
