@@ -79,11 +79,11 @@ can.Control("CMS.Controllers.InfoPin", {
         easing: 'easeOutExpo',
         complete: function () {
           $(window).trigger('resize');
-          el[0].scrollIntoView();
+          el[0].scrollIntoView(false);
         }
       });
     }else{
-      el[0].scrollIntoView();
+      el[0].scrollIntoView(false);
     }
   },
   '.pin-action a click': function(el) {
