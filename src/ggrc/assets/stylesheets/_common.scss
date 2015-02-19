@@ -870,6 +870,7 @@ select.multiple-selector {
 .sticky {
     position: -webkit-sticky;
     position: sticky;
+    z-index: 999;
     top: 0;
 }
 

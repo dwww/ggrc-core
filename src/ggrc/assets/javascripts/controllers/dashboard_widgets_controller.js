@@ -138,6 +138,8 @@ CMS.Controllers.Filterable("CMS.Controllers.DashboardWidgets", {
         }
       }).done(tracker_stop);
 
+      this.element.find(".sticky").Stickyfill();
+
       return this._display_deferred;
     }
 
