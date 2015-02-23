@@ -8,87 +8,28 @@
 
 <!-- {{{renderLive '/static/mustache/base_objects/tree_footer_zero.mustache'}}} -->
 
+
+{{#is_allowed_to_map parent_instance model.shortName}}
 {{#if allow_mapping_or_creating}}
-{{#if_instance_of parent_instance 'Directive|Program'}}
-{{#if_helpers '\
-  #if' allow_mapping '\
-  and #is_allowed_to_map' parent_instance model.shortName '\
-  or #if' allow_creating '\
-  and #is_allowed' 'create' model.shortName _3_context=null '\
-  or #if' list.length}}
-<li class="tree-item tree-item-add">
+<li class="tree-item tree-item-add tree-footer">
   <div class="row-fluid">
-    <div class="span12 section-expandable">
-      <a href="javascript://" class="section-add btn btn-small btn-draft" rel="tooltip" data-placement="right" data-original-title="+ {{model.title_singular}}">
-        <i class="grcicon-add-black"></i>
-      </a>
-      <span class="section-expander">
-        {{#if allow_mapping}}
-        {{#is_allowed_to_map parent_instance model.shortName}}
+    <div class="span12">
         <a
+          class="section-add btn btn-small btn-draft"
           href="javascript://"
           rel="tooltip"
-          data-placement="right"
+          data-placement="left"
           data-toggle="multitype-multiselect-modal-selector"
           data-join-mapping="{{mapping}}"
           data-join-option-type="{{model.shortName}}"
           data-join-object-id="{{parent_instance.id}}"
           data-join-object-type="{{parent_instance.class.shortName}}"
+          data-exclude-option-types="{{exclude_option_types}}"
           data-original-title="Map {{firstnonempty title_singular model.title_singular 'Object'}} to this {{firstnonempty parent_instance.class.title_singular 'Object'}}">
-          Map {{model.title_singular}}
+            <i class="grcicon-add-black"></i>
         </a>
-        &nbsp;
-        &nbsp;
-        {{#if allow_creating}}
-        {{#is_allowed 'create' model.shortName context=null}}
-        <a href="{{parent_instance.viewLink}}/import_controls?return_to={{param_current_location}}" class="section-import">
-          <i class="grcicon-imp-exp"></i>
-          Import Controls
-        </a>
-        &nbsp;
-        &nbsp;
-        {{/is_allowed}}
-        {{/if}}
-        {{/is_allowed_to_map}}
-        {{/if}}
-        {{#if list.length}}
-        <a href="{{parent_instance.viewLink}}/export_controls?ids={{instance_ids list}}" class="section-import">
-          <i class="grcicon-export"></i>
-          Export Controls
-        </a>
-        {{/if}}
-      </span>
     </div>
   </div>
 </li>
-{{/if_helpers}}
-
-{{else}}
-
-{{#if allow_mapping}}
-{{#is_allowed_to_map parent_instance model.shortName}}
-
-<li class="tree-item tree-item-add">
-  <div class="row-fluid">
-    <div class="span12">
-      <a
-        class="btn btn-small btn-draft"
-        href="javascript://"
-        rel="tooltip"
-        data-placement="right"
-        data-toggle="multitype-multiselect-modal-selector"
-        data-join-mapping="{{mapping}}"
-        data-join-option-type="{{model.shortName}}"
-        data-join-object-id="{{parent_instance.id}}"
-        data-join-object-type="{{parent_instance.class.shortName}}"
-        data-original-title="Map {{firstnonempty title_singular model.title_singular 'Object'}} to this {{firstnonempty parent_instance.class.title_singular 'Object'}}">
-        <i class="grcicon-add-black"></i>
-      </a>
-    </div>
-  </div>
-</li>
-
+{{/if}}
 {{/is_allowed_to_map}}
-{{/if}}
-{{/if_instance_of}}
-{{/if}}

@@ -10,28 +10,11 @@
 
 {{#is_allowed_to_map parent_instance model.shortName}}
 {{#if allow_mapping_or_creating}}
-<li class="tree-item tree-item-add">
+<li class="tree-item tree-item-add tree-footer">
   <div class="row-fluid">
-    <div class="span12 section-expandable">
-
-      {{#if model.root_object}}
-      <a
-        class="section-add btn btn-small btn-draft"
-        href="javascript://"
-        rel="tooltip"
-        data-placement="right"
-        data-toggle="multitype-multiselect-modal-selector"
-        data-join-mapping="{{mapping}}"
-        data-join-option-type="{{model.shortName}}"
-        data-join-object-id="{{parent_instance.id}}"
-        data-join-object-type="{{parent_instance.class.shortName}}"
-        data-exclude-option-types="{{exclude_option_types}}"
-        data-original-title="Map {{firstnonempty title_singular model.title_singular 'Object'}} to this {{firstnonempty parent_instance.class.title_singular 'Object'}}">
-        <i class="grcicon-add-black"></i>
-      </a>
-      <span class="section-expander">
+    <div class="span12">
         <a
-          class="section-add"
+          class="section-add btn btn-small btn-draft"
           href="javascript://"
           rel="tooltip"
           data-placement="left"
@@ -42,43 +25,8 @@
           data-join-object-type="{{parent_instance.class.shortName}}"
           data-exclude-option-types="{{exclude_option_types}}"
           data-original-title="Map {{firstnonempty title_singular model.title_singular 'Object'}} to this {{firstnonempty parent_instance.class.title_singular 'Object'}}">
-          Map {{model.title_singular}}
+            <i class="grcicon-add-black"></i>
         </a>
-        &nbsp;
-        &nbsp;
-        {{#if allow_creating}}
-        {{#is_allowed 'create' model.shortName context=null}}
-        <a href="{{parent_instance.viewLink}}/import_systems?return_to={{param_current_location}}" class="section-import">
-          <i class="grcicon-imp-exp"></i>
-          Import Systems
-        </a>
-        &nbsp;
-        &nbsp;
-        {{/is_allowed}}
-        {{/if}}
-        {{#if list.length}}
-        <a href="{{parent_instance.viewLink}}/export_systems?ids={{instance_ids list}}" class="section-import">
-          <i class="grcicon-export"></i>
-          Export Systems
-        </a>
-        {{/if}}
-      </span>
-      {{else}}
-      <a
-        class="section-add btn btn-small btn-draft"
-        href="javascript://"
-        rel="tooltip"
-        data-placement="right"
-        data-toggle="multitype-multiselect-modal-selector"
-        data-join-mapping="{{mapping}}"
-        data-join-object-id="{{parent_instance.id}}"
-        data-join-object-type="{{parent_instance.class.shortName}}"
-        data-exclude-option-types="{{exclude_option_types}}"
-        data-original-title="Map {{firstnonempty title_singular model.title_singular 'Object'}} to this {{firstnonempty parent_instance.class.title_singular 'Object'}}"
-        data-object-params='{{#if_instance_of parent_instance "Section"}}{ "section": { "id": {{parent_instance.id}}, "title": "{{json_escape parent_instance.title}}", "description": "{{json_escape parent_instance.description}}" } }{{/if_instance_of}}'>
-        <i class="grcicon-add-black"></i>
-      </a>
-      {{/if}}
     </div>
   </div>
 </li>
