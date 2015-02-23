@@ -31,6 +31,23 @@
     </div>
     <div class="span4">
       <ul class="tree-action-list">
+        {{#if allow_creating}}
+          {{#is_allowed 'create' model.shortName context=null}}
+            <li>
+              <a href="{{parent_instance.viewLink}}/import_{{model.table_plural}}?return_to={{param_current_location}}" class="section-import" rel="tooltip" data-placement="left" title="" data-original-title="Import {{model.model_plural}}">
+                <i class="grcicon-imp-exp"></i>
+              </a>
+            </li>
+          {{/is_allowed}}
+        {{/if}}
+        {{#if list.length}}
+          <li>
+            <a href="{{parent_instance.viewLink}}/export_{{model.table_plural}}?ids={{instance_ids list}}" class="section-import" rel="tooltip" data-placement="left" title="" data-original-title="Export {{model.model_plural}}">
+              <i class="grcicon-export"></i>
+            </a>
+          </li>
+        {{/if}}
+
         <li class="filter-trigger">
           <a href="javascript://" {{^filter_is_hidden}}class="active"{{/filter_is_hidden}}>
             <i class="grcicon-search" rel="tooltip" data-placement="left" title="" data-original-title="Hide Filter"></i>
