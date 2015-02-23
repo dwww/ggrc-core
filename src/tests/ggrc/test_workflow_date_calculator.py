@@ -9,7 +9,7 @@ from ggrc_workflows.services.workflow_date_calculator import WorkflowDateCalcula
 from ggrc_workflows.models import *
 from ggrc.models import *
 
-class TestWorkflowDateCalculator(TestCase):
+class BaseWorkflowDateCalculator(TestCase):
   SQLALCHEMY_DATABASE_URI = "sqlite://"
 
   def setUp(self):
@@ -205,6 +205,8 @@ class TestWorkflowDateCalculator(TestCase):
   def day_next_year(self, month, day):
     return date(date.today().year+1, month, day)
 
+
+class TestOneTimeWorkflow(BaseWorkflowDateCalculator):
   def test_start_date_sets_properly(self):
     workflow = self._create_one_time_workflow()
     workflow = \
@@ -246,8 +248,51 @@ class TestWorkflowDateCalculator(TestCase):
     previous_cycle_start_date = calculator.previous_cycle_start_date_before_basedate(mar_1)
     self.assertEqual(start_date, previous_cycle_start_date)
 
-  # Weekly workflow tests
+  def test_start_day_in_past(self):
+    past = self.seven_days_ago()
+    today = self.today()
+    future = self.seven_days_from_now()
 
+    workflow = self._set_date_range_for_workflow(
+        self._create_one_time_workflow(),
+        past,
+        future)
+    calc = WorkflowDateCalculator(workflow)
+
+    self.assertEqual(calc.nearest_start_date_after_basedate(today), past)
+    self.assertEqual(calc.nearest_end_date_after_start_date(today), future)
+
+
+  def test_start_and_end_date_in_past(self):
+    month_ago = self.thirty_days_ago()
+    week_ago = self.seven_days_ago()
+    today = self.today()
+
+    workflow = self._set_date_range_for_workflow(
+        self._create_one_time_workflow(),
+        month_ago,
+        week_ago)
+    calc = WorkflowDateCalculator(workflow)
+
+    self.assertEqual(calc.nearest_start_date_after_basedate(today), month_ago)
+    self.assertEqual(calc.nearest_end_date_after_start_date(month_ago), week_ago)
+
+  def test_end_date_before_start_date(self):
+    month_ago = self.thirty_days_ago()
+    week_ago = self.seven_days_ago()
+
+    workflow = self._set_date_range_for_workflow(
+        self._create_one_time_workflow(),
+        week_ago,
+        month_ago
+    )
+    calc = WorkflowDateCalculator(workflow)
+
+    with self.assertRaises(ValueError):
+        calc.nearest_end_date_after_start_date(week_ago)
+
+
+class TestWeeklyWorkflow(BaseWorkflowDateCalculator):
   def test_calc_end_date_weekly_workflow_start_before_end(self):
     workflow = self._create_weekly_workflow()
     workflow = \
@@ -330,8 +375,8 @@ class TestWorkflowDateCalculator(TestCase):
     self.assertEqual(start_date, tuesday)
     self.assertEqual(end_date, start_date)
 
-  # Monthly workflow tests
 
+class TestMonthlyWorkflow(BaseWorkflowDateCalculator):
   def test_monthly_workflow_calc_start_and_end_date_after_basedate(self):
     workflow = self._create_monthly_workflow()
     day_5 = self.day_this_month(5)
@@ -427,8 +472,8 @@ class TestWorkflowDateCalculator(TestCase):
     previous_cycle_end_date = calculator.nearest_end_date_after_start_date(previous_cycle_start_date)
     self.assertEqual(previous_cycle_end_date, self.day_this_year(10, 24))
 
-  # Quarterly workflow tests
 
+class TestQuarterlyWorkflow(BaseWorkflowDateCalculator):
   def test_quarterly_workflow_calc_start_and_end_date_after_basedate(self):
 
     jan_4 = self.day_this_year(1, 4)
@@ -632,8 +677,8 @@ class TestWorkflowDateCalculator(TestCase):
     previous_cycle_end_date = calculator.nearest_end_date_after_start_date(previous_cycle_start_date)
     self.assertEqual(previous_cycle_end_date, self.day_this_year(11, 24))
 
-  # Annual workflow tests
 
+class TestAnnualWorkflow(BaseWorkflowDateCalculator):
   def test_annual_start_date_before_end_date_after_basedate(self):
     apr_7 = self.day_this_year(4, 7)
     workflow_one = self._create_annual_workflow()
@@ -684,41 +729,51 @@ class TestWorkflowDateCalculator(TestCase):
     previous_cycle_end_date = calculator.nearest_end_date_after_start_date(previous_cycle_start_date)
     self.assertEqual(previous_cycle_end_date, self.day_this_year(9, 24))
 
+
+class TestRangeLimiting(BaseWorkflowDateCalculator):
   def test_nearest_workday_to_friday_is_friday(self):
-    self.assertEqual(self.friday(), WorkflowDateCalculator.adjust_start_date(self.friday()))
-    self.assertEqual(self.friday(), WorkflowDateCalculator.adjust_end_date(self.friday()))
+    self.assertEqual(self.friday(), WorkflowDateCalculator.adjust_start_date("weekly", self.friday()))
+    self.assertEqual(self.friday(), WorkflowDateCalculator.adjust_end_date("weekly", self.friday()))
 
   def test_nearest_workday_to_monday_is_monday(self):
-    self.assertEqual(self.monday(), WorkflowDateCalculator.adjust_start_date(self.monday()))
-    self.assertEqual(self.monday(), WorkflowDateCalculator.adjust_end_date(self.monday()))
+    self.assertEqual(self.monday(), WorkflowDateCalculator.adjust_start_date("weekly", self.monday()))
+    self.assertEqual(self.monday(), WorkflowDateCalculator.adjust_end_date("weekly", self.monday()))
 
   def test_nearest_start_workday_to_weekend_days_is_monday(self):
-    self.assertEqual(self.monday()+timedelta(days=7), WorkflowDateCalculator.adjust_start_date(self.saturday()))
-    self.assertEqual(self.monday()+timedelta(days=7), WorkflowDateCalculator.adjust_start_date(self.sunday()))
+    self.assertEqual(self.monday()+timedelta(days=7), WorkflowDateCalculator.adjust_start_date("weekly", self.saturday()))
+    self.assertEqual(self.monday()+timedelta(days=7), WorkflowDateCalculator.adjust_start_date("weekly", self.sunday()))
+
+  def test_adjust_start_date_for_one_time(self):
+    self.assertEqual(self.saturday(), WorkflowDateCalculator.adjust_start_date("one_time", self.saturday()))
+    self.assertEqual(self.sunday(), WorkflowDateCalculator.adjust_start_date("one_time", self.sunday()))
 
   def test_nearest_end_workday_to_weekend_days_is_friday(self):
-    self.assertEqual(self.friday(), WorkflowDateCalculator.adjust_end_date(self.saturday()))
-    self.assertEqual(self.friday(), WorkflowDateCalculator.adjust_end_date(self.sunday()))
+    self.assertEqual(self.friday(), WorkflowDateCalculator.adjust_end_date("weekly", self.saturday()))
+    self.assertEqual(self.friday(), WorkflowDateCalculator.adjust_end_date("weekly", self.sunday()))
+
+  def test_adjust_end_date_for_one_time(self):
+    self.assertEqual(self.saturday(), WorkflowDateCalculator.adjust_end_date("one_time", self.saturday()))
+    self.assertEqual(self.sunday(), WorkflowDateCalculator.adjust_end_date("one_time", self.sunday()))
 
   def test_update_state_on_workflows_without_tasks(self):
     workflows = [
-        self._create_one_time_workflow(),
-        self._create_weekly_workflow(),
-        self._create_monthly_workflow(),
-        self._create_quarterly_workflow(),
-        self._create_annual_workflow(),
+        ("one_time", self._create_one_time_workflow()),
+        ("weekly", self._create_weekly_workflow()),
+        ("monthly", self._create_monthly_workflow()),
+        ("quarterly", self._create_quarterly_workflow()),
+        ("annually", self._create_annual_workflow()),
     ]
-    for workflow in workflows:
+    for freq, workflow in workflows:
       calculator = WorkflowDateCalculator(workflow)
       next_cycle_start_date = \
-          WorkflowDateCalculator.adjust_start_date(calculator.nearest_start_date_after_basedate(self.today()))
+          WorkflowDateCalculator.adjust_start_date(freq, calculator.nearest_start_date_after_basedate(self.today()))
       next_cycle_end_date = \
-          WorkflowDateCalculator.adjust_end_date(calculator.nearest_end_date_after_start_date(next_cycle_start_date))
+          WorkflowDateCalculator.adjust_end_date(freq, calculator.nearest_end_date_after_start_date(next_cycle_start_date))
       # Check the previous cycle to see if today is mid_cycle.
       previous_cycle_start_date = \
-          WorkflowDateCalculator.adjust_start_date(calculator.previous_cycle_start_date_before_basedate(self.today()))
+          WorkflowDateCalculator.adjust_start_date(freq, calculator.previous_cycle_start_date_before_basedate(self.today()))
       previous_cycle_end_date = \
-          WorkflowDateCalculator.adjust_end_date(calculator.nearest_end_date_after_start_date(previous_cycle_start_date))
+          WorkflowDateCalculator.adjust_end_date(freq, calculator.nearest_end_date_after_start_date(previous_cycle_start_date))
 
 if __name__ == '__main__':
   import unittest

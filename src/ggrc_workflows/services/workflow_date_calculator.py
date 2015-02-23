@@ -67,8 +67,8 @@ To adjust a date for weekends & holidays you have three (static) methods to use:
 
   # You can also use the slightly more obvious methods which hide the complexity of understanding what the direction
   # values mean.
-  WorkflowDateCalculator.adjust_start_date(your_start_date)
-  WorkflowDateCalculator.adjust_end_date(your_end_date)
+  WorkflowDateCalculator.adjust_start_date(frequency, your_start_date)
+  WorkflowDateCalculator.adjust_end_date(frequency, your_end_date)
 
 One thing to note is:
  TaskGroupTasks for one_time workflows store their date values as start_date & end_date.
@@ -88,22 +88,23 @@ class WorkflowDateCalculator(object):
   direction = -1 indicates BACKWARD
   '''
   @staticmethod
-  def nearest_work_day(date_, direction):
+  def nearest_work_day(date_, direction, frequency):
     if date_ is None:
       return None
 
-    holidays = []
-    while date_.isoweekday() > 5 or date_ in holidays:
-      date_ = date_ + timedelta(direction)
+    if frequency != "one_time":
+      holidays = []
+      while date_.isoweekday() > 5 or date_ in holidays:
+        date_ = date_ + timedelta(direction)
     return date_
 
   @staticmethod
-  def adjust_start_date(start_date):
-    return WorkflowDateCalculator.nearest_work_day(start_date, 1)
+  def adjust_start_date(frequency, start_date):
+    return WorkflowDateCalculator.nearest_work_day(start_date, 1, frequency)
 
   @staticmethod
-  def adjust_end_date(end_date):
-    return WorkflowDateCalculator.nearest_work_day(end_date, -1)
+  def adjust_end_date(frequency, end_date):
+    return WorkflowDateCalculator.nearest_work_day(end_date, -1, frequency)
 
   def nearest_start_date_after_basedate(self, basedate):
     frequency = self.workflow.frequency
@@ -129,10 +130,7 @@ class WorkflowDateCalculator(object):
     basedate_month_of_year = basedate.month
 
     if "one_time" == frequency:
-      start_date = date(year=basedate.year, month=relative_start_month, day=relative_start_day)
-      if start_date < basedate:
-        start_date = start_date + monthdelta(12)
-      return start_date
+      return date(year=basedate.year, month=relative_start_month, day=relative_start_day)
     elif "weekly" == frequency:
       if relative_start_day == basedate_day_of_week:
         return basedate
@@ -222,22 +220,12 @@ class WorkflowDateCalculator(object):
       return None
 
     start_date_day_of_week = start_date.isoweekday()
-    start_date_day_of_month = start_date.day
-    start_date_month_of_year = start_date.month
-    start_date_year = start_date.year
 
     if "one_time" == frequency:
-      if end_month == start_date_month_of_year:
-        if end_day == start_date_day_of_month:
-          return start_date
-        elif end_day > start_date_day_of_month:
-          return date(year=start_date_year, month=end_month, day=end_day)
-        else:
-          return date(year=start_date_year + 1, month=end_month, day=end_day)
-      elif end_month < start_date_month_of_year:
-        return date(year=start_date_year + 1, month=end_month, day=end_day)
-      else:
-        return date(year=start_date_year, month=end_month, day=end_day)
+      end_date = date(year=start_date.year, month=end_month, day=end_day)
+      if end_date < start_date:
+          raise ValueError("End date cannot be before start date.")
+      return end_date
     elif "weekly" == frequency:
       if end_day == start_date_day_of_week:
         return start_date
@@ -246,36 +234,36 @@ class WorkflowDateCalculator(object):
       else:
         return start_date + timedelta(days=(end_day - start_date_day_of_week))
     elif "monthly" == frequency:
-      if end_day == start_date_day_of_month:
+      if end_day == start_date.day:
         return start_date
-      elif end_day < start_date_day_of_month:
+      elif end_day < start_date.day:
         end_date = start_date + monthdelta(1)
         while end_date.day > end_day:
           end_date = end_date + timedelta(days=-1)
         return end_date
       else:
-        return start_date + timedelta(days=(end_day - start_date_day_of_month))
+        return start_date + timedelta(days=(end_day - start_date.day))
     elif "quarterly" == frequency:
-      start_quarter_month = start_date_month_of_year % 3
+      start_quarter_month = start_date.month % 3
       # Offset month because we want 1-based indexing, not 0-based
       if start_quarter_month == 0:
         start_quarter_month = 3
       if start_quarter_month == end_month:
-        if start_date_day_of_month == end_day:
+        if start_date.day == end_day:
           return start_date
-        elif start_date_day_of_month < end_day:
-          return date(year=start_date_year, month=start_date_month_of_year, day=end_day)
+        elif start_date.day < end_day:
+          return date(year=start_date.year, month=start_date.month, day=end_day)
         else:
-          _end_month = start_date_month_of_year + 3
-          _year = start_date_year
+          _end_month = start_date.month + 3
+          _year = start_date.year
           if _end_month > 12:
             _year += _end_month / 12
             _end_month = (_end_month % 12)
           return date(year=_year, month=_end_month, day=end_day)
       elif start_quarter_month < end_month:
         return date(
-          year=start_date_year,
-          month=start_date_month_of_year + (end_month - start_quarter_month),
+          year=start_date.year,
+          month=start_date.month + (end_month - start_quarter_month),
           day=end_day)
       else:
         end_date = date(
@@ -300,17 +288,17 @@ class WorkflowDateCalculator(object):
             tmp_quarter_month = 3
         return tmp_end_date
     elif "annually" == frequency:
-      if start_date_month_of_year == end_month:
-        if start_date_day_of_month == end_day:
+      if start_date.month == end_month:
+        if start_date.day == end_day:
           return start_date
-        elif start_date_day_of_month < end_day:
-          return date(year=start_date_year, month=start_date_month_of_year, day=end_day)
+        elif start_date.day < end_day:
+          return date(year=start_date.year, month=start_date.month, day=end_day)
         else:
-          return date(year=start_date_year + 1, month=start_date_month_of_year, day=end_day)
-      elif start_date_month_of_year < end_month:
-        return date(year=start_date_year, month=end_month, day=end_day)
+          return date(year=start_date.year + 1, month=start_date.month, day=end_day)
+      elif start_date.month < end_month:
+        return date(year=start_date.year, month=end_month, day=end_day)
       else:
-        return date(year=start_date_year + 1, month=end_month, day=end_day)
+        return date(year=start_date.year + 1, month=end_month, day=end_day)
     else:
       pass
 
@@ -418,7 +406,7 @@ class WorkflowDateCalculator(object):
       for t in tg.task_group_tasks:
         if "one_time" == self.workflow.frequency:
           relative_start_month = WorkflowDateCalculator.\
-            relative_month_from_date(t.start_date,self.workflow.frequency)
+            relative_month_from_date(t.start_date, self.workflow.frequency)
         else:
           relative_start_month = t.relative_start_month
         if min_start_month is None or relative_start_month < min_start_month:
@@ -431,7 +419,7 @@ class WorkflowDateCalculator(object):
       for t in tg.task_group_tasks:
         if "one_time" == self.workflow.frequency:
           relative_start_day = WorkflowDateCalculator.\
-            relative_day_from_date(t.start_date,self.workflow.frequency)
+            relative_day_from_date(t.start_date, self.workflow.frequency)
         else:
           relative_start_day = t.relative_start_day
         if min_start_day is None or relative_start_day < min_start_day:
@@ -444,7 +432,7 @@ class WorkflowDateCalculator(object):
       for t in tg.task_group_tasks:
         if "one_time" == self.workflow.frequency:
           relative_end_day = WorkflowDateCalculator.\
-            relative_day_from_date(t.end_date,self.workflow.frequency)
+            relative_day_from_date(t.end_date, self.workflow.frequency)
         else:
           relative_end_day = t.relative_end_day
         if max_end_day is None or relative_end_day > max_end_day:
@@ -457,7 +445,7 @@ class WorkflowDateCalculator(object):
       for t in tg.task_group_tasks:
         if "one_time" == self.workflow.frequency:
           relative_end_month = WorkflowDateCalculator.\
-            relative_month_from_date(t.end_date,self.workflow.frequency)
+            relative_month_from_date(t.end_date, self.workflow.frequency)
         else:
           relative_end_month = t.relative_end_month
         if max_end_month is None or relative_end_month > max_end_month:
